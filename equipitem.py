@@ -1,6 +1,6 @@
 from threading import Thread
 from inputcontrol import *
-from imagesearch import imagesearch_loop
+from imagesearch import imagesearch_numLoop
 from pyautogui import position
 
 class EquipItemThread(object):
@@ -15,7 +15,7 @@ class EquipItemThread(object):
         imagepath = "./common/samples/inventory/" + itemname + ".png"
         keypress("f6")
         cursorpos = position()
-        pos = imagesearch_loop(imagepath, 0.1)
+        pos = imagesearch_numLoop(imagepath, 0.1, 4)
         inputdisable()
         moveto(pos, self.CLICKOFFSET)
         keydown("ctrlleft")

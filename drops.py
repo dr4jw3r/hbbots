@@ -22,14 +22,14 @@ DROPS = [
     ("targeshield", 0.7),
     ("tomahawk", 0.7),
     ("trousersM", 0.7),
-    ("trousersW", 0.7),
+    ("trousersW", 0.8),
     ("tunic", 0.7),
     ("wand", 0.7),
     ("wand2", 0.7),
     ("wand3", 0.7),
     ("woodshield", 0.7),
     ("xelima", 0.75),
-    ("zem", 0.8),
+    ("zem", 0.85),
     ("zem2", 0.8)
 ]
 

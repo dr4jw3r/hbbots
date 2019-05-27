@@ -25,30 +25,28 @@ class HotkeyHandler():
         elif action == "holdright":
             rightdown()
 
-        elif action == "castenergybolt":
-            CastSpellThread("energybolt")
-        elif action == "castinvisibility":
-            CastSpellThread("invisibility")
-        elif action == "castgreatheal":
-            CastSpellThread("greatheal")
-        elif action == "castgreatstaminarecovery":
-            CastSpellThread("greatstaminarecovery")
-        elif action == "casttripleenergybolt":
-            CastSpellThread("tripleenergybolt")
+        elif "cast_" in action:
+            spell = action.replace("cast_", "")
+            CastSpellThread(spell)
 
         elif action == "equipshield":
-            print("uah")
-            EquipItemThread("scutumshield")
+            EquipItemThread("lagishield")
 
     def registerhotkeys(self):
         hk = SystemHotkey(consumer=self.handlehotkey)
         hk.register(("control", "shift", "l"), "killaround")
         hk.register(("control", "shift", "u"), "holdright")
         # =======
-        hk.register(("alt", "1"), "castinvisibility")
-        hk.register(("alt", "3"), "casttripleenergybolt")
-        hk.register(("alt", "q"), "castgreatheal")
-        hk.register(("alt", "s"), "castgreatstaminarecovery")
+        hk.register(("alt", "1"), "cast_invisibility")
+        hk.register(("alt", "2"), "cast_amp")
+        hk.register(("alt", "3"), "cast_paralyze")
+
+        hk.register(("alt", "w"), "cast_icestrike")
+        hk.register(("alt", "e"), "cast_energystrike")
+
+        hk.register(("alt", "q"), "cast_greatheal")
+        hk.register(("alt", "s"), "cast_greatstaminarecovery")
+        hk.register(("control", "b"), "cast_berserk")
         # =======
         hk.register(("control", "space"), "equipshield")
         

@@ -1,7 +1,7 @@
 from ctypes import *
 from threading import Thread
 from inputcontrol import *
-from imagesearch import imagesearch_loop
+from imagesearch import imagesearch_numLoop
 from pyautogui import position
 
 class CastSpellThread(object):
@@ -12,7 +12,12 @@ class CastSpellThread(object):
             { 'name': 'greatheal', 'circle': 3 },
             { 'name': 'greatstaminarecovery', 'circle': 3 },
             { 'name': 'invisibility', 'circle': 4 },
-            { 'name': 'tripleenergybolt', 'circle': 5 }
+            { 'name': 'paralyze', 'circle': 4 },
+            { 'name': 'tripleenergybolt', 'circle': 5 },
+            { 'name': 'icestrike', 'circle': 6 },
+            { 'name': 'berserk', 'circle': 6 },
+            { 'name': 'amp', 'circle': 7 },
+            { 'name': 'energystrike', 'circle': 7 }
         ]
 
         thread = Thread(target=self.run, args=(), kwargs={'spellname': spellname})
@@ -34,7 +39,7 @@ class CastSpellThread(object):
 
         spell = self.findspell(spellname)
         self.opencircle(spell)
-        pos = imagesearch_loop(imagepath, 0.1)
+        pos = imagesearch_numLoop(imagepath, 0.1, 4)
         print(pos)
         cursorpos = position()
         inputdisable()
