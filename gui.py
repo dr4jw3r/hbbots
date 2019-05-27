@@ -5,7 +5,8 @@ from hotkeyhandler import HotkeyHandler
 LABELS = [
     ("CTRL + SHIFT + L", "Kill Around"),
     ("CTRL + SHIFT + O", "Orc Archery Bot"),
-    ("CTRL + SHIFT + U", "Toggle Right Button")
+    ("CTRL + SHIFT + U", "Toggle Right Button"),
+    ("CTRL + SHIFT + Y", "Alchemy Bot")
 ]
 
 # Methods

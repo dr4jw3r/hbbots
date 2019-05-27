@@ -8,6 +8,7 @@ from inputcontrol import rightdown, rightup
 from killaround import KillAroundThread
 from castspell import CastSpellThread
 from equipitem import EquipItemThread
+from alchbot import AlchemyThread
 
 class HotkeyHandler():
     def __init__(self):
@@ -24,6 +25,8 @@ class HotkeyHandler():
             self.currentthread = KillAroundThread()
         elif action == "holdright":
             rightdown()
+        elif action == "alchemy":
+            self.currentthread = AlchemyThread()
 
         elif "cast_" in action:
             spell = action.replace("cast_", "")
@@ -36,6 +39,7 @@ class HotkeyHandler():
         hk = SystemHotkey(consumer=self.handlehotkey)
         hk.register(("control", "shift", "l"), "killaround")
         hk.register(("control", "shift", "u"), "holdright")
+        hk.register(("control", "shift", "y"), "alchemy")
         # =======
         hk.register(("alt", "1"), "cast_invisibility")
         hk.register(("alt", "2"), "cast_amp")

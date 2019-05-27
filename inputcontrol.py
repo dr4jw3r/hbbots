@@ -13,11 +13,12 @@ def moveto(pos, offset=0, duration=0):
         pos = [x + offset for x in pos]
         pyautogui.moveTo(pos[0], pos[1], duration=duration)
 
-def click(times=1, sleeptime=0.1):
+def click(times=1, sleeptime=0):
     for i in range(0, times):
         user32.mouse_event(0x0002, 0, 0, 0, 0)
-        sleep(sleeptime)
+        sleep(0.05)
         user32.mouse_event(0x0004, 0, 0, 0, 0)
+        sleep(sleeptime)
 
 def leftdown():
     user32.mouse_event(0x0002, 0, 0, 0, 0)        

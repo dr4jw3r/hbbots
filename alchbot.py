@@ -1,50 +1,56 @@
-from inputcontrol import *
-from imagesearch import *
 from time import sleep
+from threading import Thread
+from imagesearch import imagesearch_loop, imagesearcharea, region_grabber
+from inputcontrol import *
 
-from pyautogui import position
+class AlchemyThread(object):
+    def __init__(self):
+        self.stopthread = False
 
-# ======================
-def clickitem(item, precision=0.5):
-    pos = imagesearch_loop("./common/samples/alch/" + item + ".png", 0.5, precision=precision)
+        thread = Thread(target=self.run, args=())
+        thread.daemon = True
+        thread.start()
 
-    # print(pos)
+    def clickitem(self, pos):
+        moveto(pos, 10)
+        click(2, 0.05)
+        sleep(1)
 
-    if pos[0] != -1:
-        moveto([x + 10 for x in pos])
-        sleep(0.05)
-        click(2, 0.26)
+    def trynow(self):
+        pos = imagesearch_loop("./common/samples/alch/trynow2.png", 0.1, 0.5)
+        moveto(pos, 5)
+        click()
 
-# ======================
+    def finditem(self, im, itemname, precision=0.8):
+        imagepath = "./common/samples/alch/" + itemname + ".png"
 
-def makehealthpotion():
-    clickitem("alchemybowl", 0.9)
-    sleep(0.5)
-    clickitem("slimejelly", 0.8)
-    sleep(0.5)
-    clickitem("snaketongue")
-    sleep(0.5)
-    clickitem("antleg", 0.8)
-    sleep(0.5)
-    clickitem("trynow2", 0.5)
+        pos = (-1, -1)
 
-x = 550
-y = 380
-offset = 50
+        while pos[0] == -1:
+            pos = imagesearcharea(imagepath, 0, 0, 1920, 1080, precision, im)
+            precision -= 0.05
 
-pos1 = (x, y)
-pos2 = (x + offset, y)
-pos3 = (x + offset * 2, y)
-pos4 = (x + offset * 3, y)
+        return pos
 
-sleep(10)
-moveto(pos4)
-click(2)
-moveto(pos1)
-click(2)
-moveto(pos2)
-click(2)
-moveto(pos3)
-click(2)
-clickitem("trynow2", 0.5)
-sleep(3)
+    def makemanapotion(self):
+        im = region_grabber((0, 0, 1920, 1080))
+
+        bowlpos = self.finditem(im, "alchemybowl")
+        slimepos = self.finditem(im, "slimejelly")
+        snakeskinpos = self.finditem(im, "snakeskin")
+        antantennapos = self.finditem(im, "antantenna")
+
+        self.clickitem(bowlpos)
+        self.clickitem(slimepos)
+        self.clickitem(snakeskinpos)
+        self.clickitem(antantennapos)
+
+        self.trynow()
+        sleep(4)
+
+    def run(self):
+        while not self.stopthread:
+            self.makemanapotion()
+
+    def stop(self):
+        self.stopthread = True
