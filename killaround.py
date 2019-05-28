@@ -108,7 +108,7 @@ class KillAroundThread(object):
                 scancount = 0
                 scanouter = False
 
-            if critcounter >= 50:
+            if critcounter >= 15:
                 keydown("altleft")
                 if critcounter >= 60:
                     critcounter = 0

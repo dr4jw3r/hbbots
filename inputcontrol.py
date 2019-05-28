@@ -13,10 +13,10 @@ def moveto(pos, offset=0, duration=0):
         pos = [x + offset for x in pos]
         pyautogui.moveTo(pos[0], pos[1], duration=duration)
 
-def click(times=1, sleeptime=0):
+def click(times=1, sleeptime=0, duration=0.05):
     for i in range(0, times):
         user32.mouse_event(0x0002, 0, 0, 0, 0)
-        sleep(0.05)
+        sleep(duration)
         user32.mouse_event(0x0004, 0, 0, 0, 0)
         sleep(sleeptime)
 
@@ -46,3 +46,7 @@ def inputdisable():
 
 def inputenable():
     windll.user32.BlockInput(False)
+
+def position():
+    return pyautogui.position()
+    

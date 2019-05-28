@@ -17,7 +17,9 @@ class CastSpellThread(object):
             { 'name': 'icestrike', 'circle': 6 },
             { 'name': 'berserk', 'circle': 6 },
             { 'name': 'amp', 'circle': 7 },
-            { 'name': 'energystrike', 'circle': 7 }
+            { 'name': 'energystrike', 'circle': 7 },
+            { 'name': 'blizzard', 'circle': 0 },
+            { 'name': 'earthshockwave', 'circle': 0 },
         ]
 
         thread = Thread(target=self.run, args=(), kwargs={'spellname': spellname})
