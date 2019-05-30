@@ -16,6 +16,7 @@ class CastSpellThread(object):
             { 'name': 'tripleenergybolt', 'circle': 5 },
             { 'name': 'icestrike', 'circle': 6 },
             { 'name': 'berserk', 'circle': 6 },
+            { 'name': 'haste', 'circle': 6 },
             { 'name': 'amp', 'circle': 7 },
             { 'name': 'energystrike', 'circle': 7 },
             { 'name': 'blizzard', 'circle': 0 },

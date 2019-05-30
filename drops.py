@@ -7,8 +7,7 @@ SCREENSIZE = (0, 0, SCREENWIDTH, SCREENHEIGHT)
 SCREENCENTER = [400, 300]
 CLICKOFFSET = 5
 
-p1 = (319, 222)
-p2 = (481, 383)
+GRABREGION = (319, 222, 481, 383)
 
 DROPS = [
     ("bodice", 0.7, True),
@@ -50,17 +49,20 @@ DROPS = [
 ]
 
 def checkfordrops(runtime=1):
-    im = region_grabber(SCREENSIZE)
+    im = region_grabber(GRABREGION)
+    im.save("test.png")
 
     for i in range(0, len(DROPS)):
         if DROPS[i][2] == False:
             continue
 
-        pos = imagesearcharea("./common/samples/drops/" + DROPS[i][0] + ".png", 0, 0, SCREENWIDTH, SCREENHEIGHT, DROPS[i][1], im)
+        pos = imagesearcharea("./common/samples/drops/" + DROPS[i][0] + ".png", GRABREGION[0], GRABREGION[1], GRABREGION[2], GRABREGION[3], DROPS[i][1], im)
 
         if pos[0] != -1:
             print(DROPS[i])
-            moveto([ val + CLICKOFFSET for val in pos ])
+            newpos = ((GRABREGION[0] + CLICKOFFSET + pos[0]), (GRABREGION[1] + CLICKOFFSET + pos[1]))
+            print(pos, newpos)
+            moveto(newpos)
             sleep(0.05)
             click()
             sleep(runtime)

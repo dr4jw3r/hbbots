@@ -12,9 +12,9 @@ from gold import checkforgold
 class KillAroundThread(object):
     def __init__(self):
         self.POSITIONS = [
-            ( 367, 272 ),
-            ( 397, 267 ),
-            ( 430, 272 ),
+            ( 367, 260 ),
+            ( 397, 260 ),
+            ( 430, 260 ),
             ( 433, 305 ),
             ( 433, 333 ),
             ( 396, 333 ),
@@ -54,6 +54,7 @@ class KillAroundThread(object):
             checkfordrops()
 
     def run(self):
+        reverse = False
         scanouter = False
         index = 0
         critcounter = 0
@@ -61,7 +62,7 @@ class KillAroundThread(object):
         clickleftcount = 0
 
         while self.keeprunning:                   
-            if scancount >= 2:
+            if scancount >= 3:
                 scanouter = True
 
             if not scanouter:
@@ -72,6 +73,7 @@ class KillAroundThread(object):
             sleep(0.05)
             pos = imagesearch("./common/samples/misc/cursor.png", 0.45)
 
+            # If sword cursor has been found
             if pos[0] == -1:
                 checkforgold()
                 self.finddrops()
@@ -80,15 +82,19 @@ class KillAroundThread(object):
                 rightup()
                 index += 1
 
+                # Keep scanning inner circle
                 if not scanouter:
                     if index > len(self.POSITIONS) - 1:
                         index = 0
                         scancount += 1
+                # Scan outer circle
                 else:
                     if index > len(self.OUTER) - 1:
                         index = 0
                         scancount = 0
                         scanouter = False
+            
+            # If sword cursor has not been found
             else:
                 if scanouter:
                     keydown("ctrlleft")

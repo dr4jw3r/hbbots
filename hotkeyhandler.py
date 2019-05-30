@@ -51,6 +51,7 @@ class HotkeyHandler():
         hk.register(("alt", "1"), "cast_invisibility")
         hk.register(("alt", "2"), "cast_amp")
         hk.register(("alt", "3"), "cast_paralyze")
+        hk.register(("alt", "4"), "cast_haste")
 
         hk.register(("alt", "w"), "cast_blizzard")
         hk.register(("alt", "e"), "cast_earthshockwave")

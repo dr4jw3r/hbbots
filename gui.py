@@ -19,7 +19,6 @@ def buildui():
         tk.Label(root, text=label[0]).grid(row=row, column=1, ipadx=PADDING_X, ipady=PADDING_Y)
         tk.Label(root, text=label[1]).grid(row=row, column=3, ipadx=PADDING_X, ipady=PADDING_Y)
 
-    root.attributes('-topmost', True)    
     root.mainloop()
 
 # Start
