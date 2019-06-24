@@ -6,35 +6,55 @@ from system_hotkey import SystemHotkey
 from inputcontrol import rightdown, rightup, position
 
 from killaround import KillAroundThread
+from orcbot import OrcThread
 from castspell import CastSpellThread
 from equipitem import EquipItemThread
 from alchbot import AlchemyThread
+from mpregenbot import MpRegenThread
+from adbot import AdThread
+from fakeamp import FakeAmpThread
 
 class HotkeyHandler():
     def __init__(self):
         self.currentthread = None
+        self.mpregenbotthread = None
         self.alchemypositions = [None] * 7
+        self.currentshield = "lagishield"
 
     def handlehotkey(self, event, hotkey, *args):
         winsound.MessageBeep()
         action = args[0][0][0]
+
+        if action == "adbot":
+            AdThread()
+            return
 
         if self.currentthread is not None:
             self.currentthread.stop()
             self.currentthread = None
         elif action == "killaround":
             self.currentthread = KillAroundThread()
+        elif action == "orcbot":
+            self.currentthread = OrcThread()
         elif action == "holdright":
             rightdown()
         elif action == "alchemy":
             self.currentthread = AlchemyThread(self.alchemypositions)
+        elif action == "mpregenbot":
+            if self.mpregenbotthread is None:
+                self.mpregenbotthread = MpRegenThread(self.currentshield)
+            else:
+                self.mpregenbotthread.stop()
+                self.mpregenbotthread = None        
+        elif action == "fakeampbot":
+            self.currentthread = FakeAmpThread()
 
         elif "cast_" in action:
             spell = action.replace("cast_", "")
             CastSpellThread(spell)
 
         elif action == "equipshield":
-            EquipItemThread("lagishield")
+            EquipItemThread(self.currentshield)
 
         elif "alchemy_" in action:
             index = int(action.replace("alchemy_", ""))
@@ -45,8 +65,12 @@ class HotkeyHandler():
     def registerhotkeys(self):
         hk = SystemHotkey(consumer=self.handlehotkey)
         hk.register(("control", "shift", "l"), "killaround")
+        hk.register(("control", "shift", "i"), "orcbot")
         hk.register(("control", "shift", "u"), "holdright")
         hk.register(("control", "shift", "y"), "alchemy")
+        hk.register(("control", "shift", "m"), "mpregenbot")
+        hk.register(("control", "alt", "shift", "y"), "adbot")
+        hk.register(("control", "alt", "shift", "t"), "fakeampbot")
         # =======
         hk.register(("alt", "1"), "cast_invisibility")
         hk.register(("alt", "2"), "cast_amp")
@@ -55,10 +79,13 @@ class HotkeyHandler():
 
         hk.register(("alt", "w"), "cast_blizzard")
         hk.register(("alt", "e"), "cast_earthshockwave")
+        hk.register(("alt", "r"), "cast_defenseshield")
 
         hk.register(("alt", "q"), "cast_greatheal")
         hk.register(("alt", "s"), "cast_greatstaminarecovery")
+
         hk.register(("control", "b"), "cast_berserk")
+        hk.register(("control", "v"), "cast_pfm")
         # =======
         hk.register(("control", "space"), "equipshield")
         # =======

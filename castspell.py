@@ -8,11 +8,12 @@ class CastSpellThread(object):
     def __init__(self, spellname):
         self.CLICKOFFSET = 5
         self.SPELLS = [
-            { 'name': 'energybolt', 'circle': 2 },
+            { 'name': 'defenseshield', 'circle': 2 },
             { 'name': 'greatheal', 'circle': 3 },
             { 'name': 'greatstaminarecovery', 'circle': 3 },
             { 'name': 'invisibility', 'circle': 4 },
             { 'name': 'paralyze', 'circle': 4 },
+            { 'name': 'pfm', 'circle': 4 },
             { 'name': 'tripleenergybolt', 'circle': 5 },
             { 'name': 'icestrike', 'circle': 6 },
             { 'name': 'berserk', 'circle': 6 },

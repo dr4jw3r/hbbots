@@ -54,26 +54,34 @@ class KillAroundThread(object):
             checkfordrops()
 
     def run(self):
+        CRITCOUNTER = 30
         reverse = False
         scanouter = False
         index = 0
         critcounter = 0
         scancount = 0
         clickleftcount = 0
+        indexes = random.sample(range(0, 8), 8)
 
         while self.keeprunning:                   
             if scancount >= 3:
                 scanouter = True
 
             if not scanouter:
-                moveto(self.POSITIONS[index])
+                moveto(self.POSITIONS[indexes[index]])
             else:
                 moveto(self.OUTER[index])
                 
-            sleep(0.05)
-            pos = imagesearch("./common/samples/misc/cursor.png", 0.45)
+            sleep(0.08)
 
-            # If sword cursor has been found
+            if not scanouter and indexes[index] >= 0 and indexes[index] <= 2:
+                precision = 0.45
+            else:
+                precision = 0.45
+            
+            pos = imagesearch("./common/samples/misc/cursor.png", precision)
+
+            # If sword cursor has NOT been found
             if pos[0] == -1:
                 checkforgold()
                 self.finddrops()
@@ -84,23 +92,25 @@ class KillAroundThread(object):
 
                 # Keep scanning inner circle
                 if not scanouter:
-                    if index > len(self.POSITIONS) - 1:
+                    if index >= len(self.POSITIONS):
                         index = 0
+                        indexes = random.sample(range(0, 8), 8)
                         scancount += 1
                 # Scan outer circle
                 else:
-                    if index > len(self.OUTER) - 1:
+                    if index >= len(self.OUTER):
                         index = 0
                         scancount = 0
                         scanouter = False
             
-            # If sword cursor has not been found
+            # If sword cursor has been found
             else:
                 if scanouter:
                     keydown("ctrlleft")
                     click()
                     keyup("ctrlleft")
                     index = 0
+                    indexes = random.sample(range(0, 8), 8)
                 else:
                     clickleftcount += 1
 
@@ -114,9 +124,9 @@ class KillAroundThread(object):
                 scancount = 0
                 scanouter = False
 
-            if critcounter >= 15:
+            if critcounter >= CRITCOUNTER:
                 keydown("altleft")
-                if critcounter >= 60:
+                if critcounter >= CRITCOUNTER * 2.5:
                     critcounter = 0
                     keyup("altleft")
 

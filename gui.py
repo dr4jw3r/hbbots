@@ -1,12 +1,15 @@
 import tkinter as tk
 from hotkeyhandler import HotkeyHandler
+from pfmwatcher import PfmWatcherThread
 
 # Labels
 LABELS = [
     ("CTRL + SHIFT + L", "Kill Around"),
-    ("CTRL + SHIFT + O", "Orc Archery Bot"),
+    ("CTRL + SHIFT + I", "Orc Archery Bot"),
     ("CTRL + SHIFT + U", "Toggle Right Button"),
-    ("CTRL + SHIFT + Y", "Alchemy Bot")
+    ("CTRL + SHIFT + Y", "Alchemy Bot"),
+    ("CTRL + ALT + SHIFT + Y", "Advert Bot"),
+    ("CTRL + ALT + SHIFT + T", "Fake AMP Bot")
 ]
 
 # Methods

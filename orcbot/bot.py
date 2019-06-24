@@ -1,6 +1,7 @@
 from ctypes import *
 from time import sleep
 from imagesearch import *
+from gold import checkforgold
 
 import pyautogui
 
@@ -65,13 +66,7 @@ def checkfordrops():
             click()
 
 def findorc(idx):
-    pos = imagesearch("./samples/gold.png", 0.6)
-
-    if pos[0] != -1:
-        moveto(pos)
-        click()
-        sleep(1)
-
+    checkforgold()
     checkfordrops()
 
     pos = imagesearch("./samples/" + str(idx) + ".png", 0.4)    
