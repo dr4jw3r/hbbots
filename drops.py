@@ -61,9 +61,7 @@ def checkfordrops(runtime=1):
         pos = imagesearcharea("./common/samples/drops/" + DROPS[i][0] + ".png", GRABREGION[0], GRABREGION[1], GRABREGION[2], GRABREGION[3], DROPS[i][1], im)
 
         if pos[0] != -1:
-            print(DROPS[i])
             newpos = ((GRABREGION[0] + CLICKOFFSET + pos[0]), (GRABREGION[1] + CLICKOFFSET + pos[1]))
-            print(pos, newpos)
             moveto(newpos)
             sleep(0.05)
             click()

@@ -47,6 +47,7 @@ def imagesearcharea(image, x1,y1,x2,y2, precision=0.8, im=None) :
         im = region_grabber(region=(x1, y1, x2, y2))
         # im.save('testarea.png') # usefull for debugging purposes, this will save the captured region as "testarea.png"
 
+    im.save('testarea.png')
     img_rgb = np.array(im)
     img_gray = cv2.cvtColor(img_rgb, cv2.COLOR_BGR2GRAY)
     template = cv2.imread(image, 0)

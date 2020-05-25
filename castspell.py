@@ -9,6 +9,7 @@ class CastSpellThread(object):
         self.CLICKOFFSET = 5
         self.SPELLS = [
             { 'name': 'defenseshield', 'circle': 2 },
+            { 'name': 'recall', 'circle': 2 },
             { 'name': 'greatheal', 'circle': 3 },
             { 'name': 'greatstaminarecovery', 'circle': 3 },
             { 'name': 'invisibility', 'circle': 4 },
@@ -22,6 +23,7 @@ class CastSpellThread(object):
             { 'name': 'energystrike', 'circle': 7 },
             { 'name': 'blizzard', 'circle': 0 },
             { 'name': 'earthshockwave', 'circle': 0 },
+            { 'name': 'createfood', 'circle': 1 },
         ]
 
         thread = Thread(target=self.run, args=(), kwargs={'spellname': spellname})
@@ -44,12 +46,13 @@ class CastSpellThread(object):
         spell = self.findspell(spellname)
         self.opencircle(spell)
         pos = imagesearch_numLoop(imagepath, 0.1, 4)
-        print(pos)
+
         cursorpos = position()
         inputdisable()
         moveto(pos, self.CLICKOFFSET)
         click()
         moveto(cursorpos)
+
         keyup("altleft")
         inputenable()
 

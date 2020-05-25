@@ -13,9 +13,12 @@ from alchbot import AlchemyThread
 from mpregenbot import MpRegenThread
 from adbot import AdThread
 from fakeamp import FakeAmpThread
+from snakebot.levelbot import LevellingBotThread
+from repbot.repbot import RepBotThread
 
 class HotkeyHandler():
     def __init__(self):
+        self.repthread = RepBotThread()
         self.currentthread = None
         self.mpregenbotthread = None
         self.alchemypositions = [None] * 7
@@ -48,6 +51,14 @@ class HotkeyHandler():
                 self.mpregenbotthread = None        
         elif action == "fakeampbot":
             self.currentthread = FakeAmpThread()
+        elif action == "repbot":
+            self.repthread = RepBotThread()
+        elif action == "levellingbot":
+            self.currentthread = LevellingBotThread(False)
+        elif action == "levellingbot_pit":
+            self.currentthread = LevellingBotThread(True)
+        elif action == "logcursor":
+            print(position())
 
         elif "cast_" in action:
             spell = action.replace("cast_", "")
@@ -69,8 +80,12 @@ class HotkeyHandler():
         hk.register(("control", "shift", "u"), "holdright")
         hk.register(("control", "shift", "y"), "alchemy")
         hk.register(("control", "shift", "m"), "mpregenbot")
+        hk.register(("control", "shift", "k"), "levellingbot")
+        hk.register(("control", "shift", "j"), "levellingbot_pit")
         hk.register(("control", "alt", "shift", "y"), "adbot")
         hk.register(("control", "alt", "shift", "t"), "fakeampbot")
+        hk.register(("control", "alt", "shift", "r"), "repbot")
+        hk.register(("control", "alt", "shift", "q"), "logcursor")
         # =======
         hk.register(("alt", "1"), "cast_invisibility")
         hk.register(("alt", "2"), "cast_amp")

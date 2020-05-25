@@ -8,9 +8,11 @@ from inputcontrol import *
 from drops import checkfordrops
 from gold import checkforgold
 #====
+from ocr import getlocation
 
 class KillAroundThread(object):
-    def __init__(self):
+    def __init__(self, singlescan=False):
+        self.singlescan = singlescan
         self.POSITIONS = [
             ( 367, 260 ),
             ( 397, 260 ),
@@ -93,6 +95,10 @@ class KillAroundThread(object):
                 # Keep scanning inner circle
                 if not scanouter:
                     if index >= len(self.POSITIONS):
+
+                        if self.singlescan:
+                            self.stop()
+
                         index = 0
                         indexes = random.sample(range(0, 8), 8)
                         scancount += 1
@@ -105,6 +111,9 @@ class KillAroundThread(object):
             
             # If sword cursor has been found
             else:
+                elitepos = imagesearch("./common/samples/misc/elite.png", 0.8)
+                iselite = elitepos[0] != -1
+
                 if scanouter:
                     keydown("ctrlleft")
                     click()
@@ -112,6 +121,9 @@ class KillAroundThread(object):
                     index = 0
                     indexes = random.sample(range(0, 8), 8)
                 else:
+                    if iselite:
+                        keydown("altleft")
+                        
                     clickleftcount += 1
 
                     if clickleftcount >= 10:

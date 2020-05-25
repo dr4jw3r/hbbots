@@ -4,7 +4,7 @@ from time import sleep
 
 class AdThread(object):
     def __init__(self):
-        self.text = "!sell sot/cic3hp50 rh M + 3/hp41 light plate M/hp39light fh M/mp tab"
+        self.text = "!trade sot|cic3hp50 rh M + 3|hp41 light plate M|hp39light fh M"
 
         thread = Thread(target=self.run, args=())
         thread.daemon = True
