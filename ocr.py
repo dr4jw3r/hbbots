@@ -16,8 +16,10 @@ class OCR(object):
         self.COLOR_WHITE = [255, 255, 255]
         self.COLOR_BLACK = [0, 0, 0]
         self.COLOR_LOCATION = [248, 248, 219]
+        self.COLOR_GREEN = [0, 255, 0]
+        self.COLOR_LOG = [206, 235, 187]
 
-    def process_chat_image(self, image):
+    def _process_chat_image(self, image):
         image = image.convert("RGB")
 
         image_data = np.array(image)
@@ -34,6 +36,18 @@ class OCR(object):
         processed = Image.fromarray(rgb_data)
         return processed
         
+    def _process_image(self, img, color):
+        img = img.convert("RGB")
+        data = np.array(img)
+        rgb = data[:,:,:3]
+
+        mask = np.all(rgb != color, axis=-1)
+        data[mask] = self.COLOR_WHITE
+
+        mask = np.all(rgb == color, axis=-1)
+        data[mask] = self.COLOR_BLACK
+
+        return Image.fromarray(data)
 
     def getlocation(self):    
         screenshot = imagesearch.region_grabber((228, 571, 396, 595))
@@ -57,7 +71,7 @@ class OCR(object):
             return None
 
     def readchat(self, query):
-        processed = self.process_chat_image(imagesearch.region_grabber((15, 125, 285, 150)))
+        processed = self._process_chat_image(imagesearch.region_grabber((15, 125, 285, 150)))
 
         res = pytesseract.image_to_string(processed)
 
@@ -66,3 +80,21 @@ class OCR(object):
                 return None
         
         return res
+
+    def reptime(self):
+        img = imagesearch.region_grabber((12, 520, 400, 540))
+        img = self._process_image(img, self.COLOR_GREEN)
+
+        res = pytesseract.image_to_string(img)
+        
+        if len(res) > 0:
+            seconds_to_rep = re.findall("\d+", res)[-1]
+            print(seconds_to_rep)
+            return int(seconds_to_rep)
+
+        return -1
+
+    def inventoryfull(self):
+        img = imagesearch.region_grabber((12, 520, 400, 540))
+        img = self._process_image(img, self.COLOR_LOG)
+        img.save('just_test.png')

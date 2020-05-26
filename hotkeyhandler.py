@@ -18,7 +18,7 @@ from repbot.repbot import RepBotThread
 
 class HotkeyHandler():
     def __init__(self):
-        self.repthread = RepBotThread()
+        self.repthread = None
         self.currentthread = None
         self.mpregenbotthread = None
         self.alchemypositions = [None] * 7

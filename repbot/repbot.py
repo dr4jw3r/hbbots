@@ -1,5 +1,5 @@
 import re
-from time import sleep
+from time import sleep, time
 from CancellationToken import CancellationToken
 from threading import Thread
 from ocr import OCR
@@ -9,37 +9,67 @@ class RepBotThread(object):
     def __init__(self):
         self.cancellation_token = CancellationToken()        
         self.OCR = OCR()
+        self.reptime = -1        
 
         thread = Thread(target=self.run, args=())
         thread.daemon = True
         thread.start()
 
     def run(self):
+        rep_checked = 0
+
         while not self.cancellation_token.is_cancelled:
-            res = self.OCR.readchat(["trade", "rep"])
-            if res is not None:
-                if res.find(":") is not -1:
-                    if res.find("]") is not -1:
-                        split = res.split("]")
-                    elif res.find(")") is not -1:
-                        split = res.split(")")
+            sleep(1)
 
-                    split = split[1].split(":")
-                    name = split[0].strip()
-                    tr_string = "/traderep " + name
-                    
-                    # check functioning while killing
+            self.OCR.inventoryfull()
 
-                    keyup("ctrlleft")
-                    keyup("altleft")
+            if self.reptime == -1:
+                self.sendmessage("/checkrep")
+                sleep(1)
+                self.reptime = self.OCR.reptime()
+                rep_checked = time()
 
-                    keypress("enter")
-                    for letter in tr_string:
-                        keypress(letter)
-                    keypress("enter")
+            elif self.reptime > 0:
+                if self.cancellation_token.is_cancelled:
+                    return
+                
+                # set time until recheck rep
+                elapsed = time() - rep_checked
+                if int(elapsed) >= self.reptime:
+                    self.reptime = -1
 
-            sleep(2)
+            elif self.reptime == 0:
+                if self.cancellation_token.is_cancelled:
+                    return
 
-    
+                res = self.OCR.readchat(["trade", "rep"])
+                if res is not None:
+                    if res.find(":") is not -1:
+                        if res.find("]") is not -1:
+                            split = res.split("]")
+                        elif res.find(")") is not -1:
+                            split = res.split(")")
+
+                        split = split[1].split(":")
+                        name = split[0].strip()
+                        tr_string = "/traderep " + name
+                        
+                        # check functioning while killing
+                        self.sendmessage(tr_string)
+                        self.reptime = -1
+                        sleep(10)
+
+            
+
+    def sendmessage(self, message):
+        # Release these keys just in case they were down
+        keyup("ctrlleft")
+        keyup("altleft")
+
+        keypress("enter")
+        for letter in message:
+            keypress(letter)
+        keypress("enter")
+
     def stop(self):
         self.cancellation_token.cancel()

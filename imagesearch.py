@@ -110,6 +110,7 @@ def imagesearch(image, precision=0.8):
 
     if max_val < precision:
         return [-1,-1]
+
     return max_loc
 
 
