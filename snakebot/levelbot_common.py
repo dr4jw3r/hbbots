@@ -170,7 +170,6 @@ def kill(cancellation_token, time):
     killthread = KillAroundThread()
             
     current_time = 0
-    disenchant_time = start
     
     while current_time - start <= (time * 60000):
         if cancellation_token.is_cancelled:
@@ -180,11 +179,10 @@ def kill(cancellation_token, time):
 
         current_time = currentmillis()
 
-        if current_time - disenchant_time >= (DISENCHANT_TIME * 60000):
+        if OCR.inventoryfull():
             killthread.stop()
             killthread = None
 
-            disenchant_time = current_time
             chugpots()
             sleep(0.5)
             eatsnakemeat()
@@ -201,6 +199,7 @@ def kill(cancellation_token, time):
     killthread = None
 
 def eatsnakemeat():
+    moveto((10, 10))
     openinventory()
     pos = [0, 0]
     
@@ -307,8 +306,6 @@ def followwpts(cancellation_token, wpts, locationstop=None):
 def runto(direction, coords, delay=0.02, locationstop=None):
         sleep(delay)
         current_loc = OCR.getlocation()
-
-        print(current_loc)
 
         if locationstop is not None and current_loc is not None:
             if current_loc[0].find(locationstop) != -1:

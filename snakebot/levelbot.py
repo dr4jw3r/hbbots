@@ -12,7 +12,7 @@ class LevellingBotThread(object):
         self.cancellation_token = CancellationToken()
 
         self.direction = [1, 1]
-        self.kill_time = 40
+        self.kill_time = 60
 
         thread = Thread(target=self.run, args=())
         thread.daemon = True

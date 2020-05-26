@@ -126,7 +126,7 @@ the top left corner coordinates of the element if found as an array [x,y]
 def imagesearch_loop(image, timesample, precision=0.8):
     pos = imagesearch(image, precision)
     while pos[0] == -1:
-        print(image+" not found, waiting")
+        # print(image+" not found, waiting")
         time.sleep(timesample)
         pos = imagesearch(image, precision)
     return pos
@@ -148,7 +148,7 @@ def imagesearch_numLoop(image, timesample, maxSamples, precision=0.8):
     pos = imagesearch(image, precision)
     count = 0
     while pos[0] == -1:
-        print(image+" not found, waiting")
+        # print(image+" not found, waiting")
         time.sleep(timesample)
         pos = imagesearch(image, precision)
         count = count + 1

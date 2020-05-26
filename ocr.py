@@ -17,7 +17,7 @@ class OCR(object):
         self.COLOR_BLACK = [0, 0, 0]
         self.COLOR_LOCATION = [248, 248, 219]
         self.COLOR_GREEN = [0, 255, 0]
-        self.COLOR_LOG = [206, 235, 187]
+        self.COLOR_LOG = [180, 255, 180]
 
     def _process_chat_image(self, image):
         image = image.convert("RGB")
@@ -88,13 +88,34 @@ class OCR(object):
         res = pytesseract.image_to_string(img)
         
         if len(res) > 0:
-            seconds_to_rep = re.findall("\d+", res)[-1]
-            print(seconds_to_rep)
-            return int(seconds_to_rep)
+            result = re.findall("\d+", res)
+
+            if len(result) > 0:
+                seconds_to_rep = result[-1]
+                return int(seconds_to_rep)
 
         return -1
 
     def inventoryfull(self):
-        img = imagesearch.region_grabber((12, 520, 400, 540))
-        img = self._process_image(img, self.COLOR_LOG)
-        img.save('just_test.png')
+        img = imagesearch.region_grabber((12, 520, 100, 540))
+        img = img.convert("RGB")
+        
+        data = np.array(img)
+        rgb = data[:,:,:3]
+        
+        mask = np.all(rgb != self.COLOR_LOG, axis=-1)
+        data[mask] = self.COLOR_WHITE
+
+        mask = np.all(rgb == self.COLOR_LOG, axis=-1)
+        data[mask] = self.COLOR_BLACK
+
+        img = Image.fromarray(data)
+        
+        res = pytesseract.image_to_string(img)
+
+        keywords = ["bag", "full"]
+        for kw in keywords:
+            if res.find(kw) == -1:
+                return False
+            
+        return True

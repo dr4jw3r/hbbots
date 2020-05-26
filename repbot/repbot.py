@@ -21,7 +21,6 @@ class RepBotThread(object):
         while not self.cancellation_token.is_cancelled:
             sleep(1)
 
-            self.OCR.inventoryfull()
 
             if self.reptime == -1:
                 self.sendmessage("/checkrep")
