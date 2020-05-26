@@ -8,7 +8,6 @@ from inputcontrol import *
 from drops import checkfordrops
 from gold import checkforgold
 #====
-from ocr import getlocation
 
 class KillAroundThread(object):
     def __init__(self, singlescan=False):

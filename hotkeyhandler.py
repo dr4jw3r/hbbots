@@ -52,7 +52,11 @@ class HotkeyHandler():
         elif action == "fakeampbot":
             self.currentthread = FakeAmpThread()
         elif action == "repbot":
-            self.repthread = RepBotThread()
+            if self.repthread is None:
+                self.repthread = RepBotThread()
+            else:
+                self.repthread.stop()
+                self.repthread = None
         elif action == "levellingbot":
             self.currentthread = LevellingBotThread(False)
         elif action == "levellingbot_pit":

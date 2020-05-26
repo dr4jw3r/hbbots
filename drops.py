@@ -18,7 +18,6 @@ DROPS = [
     ("fullhelm", 0.8, True),
     ("gladius", 0.7, True),
     ("mallet", 0.7, True),
-    ("merien", 0.8, True),
     ("ring", 0.72, False),
     ("saxonaxe", 0.7, True),
     ("scutum", 0.7, True),
@@ -33,7 +32,6 @@ DROPS = [
     ("wand3", 0.7, True),
     ("wizardhat", 0.8, True),
     ("woodshield", 0.7, True),
-    ("xelima", 0.75, True),
     ("zem", 0.85, True),
     ("zem2", 0.8, True),
     # ==================

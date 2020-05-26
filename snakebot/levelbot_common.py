@@ -4,11 +4,13 @@ from inputcontrol import keypress, keydown, keyup, moveto, click, clickright
 from imagesearch import imagesearch, imagesearch_numLoop
 from time import sleep, time
 
-from ocr import getlocation
+from ocr import OCR
 from charmove import *
 
 from castspell import CastSpellThread
 from killaround import KillAroundThread
+
+OCR = OCR()
 
 STAFF_POSITION = (653, 439)
 SELF_POSITION = (400, 280)
@@ -17,7 +19,8 @@ WEAPON_POSITION = (522, 468)
 INVENTORY_POSITIONS = [
     (585, 352),
     (574, 357),
-    (586, 370)
+    (586, 370),
+    (572, 368)
 ]
 
 DISENCHANT_TIME = 5
@@ -182,7 +185,12 @@ def kill(cancellation_token, time):
 
             disenchant_time = current_time
             chugpots()
+            sleep(0.5)
+            eatsnakemeat()
+            sleep(0.5)
             disenchant()
+            sleep(0.5)
+            eatsnakemeat()
 
             killthread = KillAroundThread()
 
@@ -190,6 +198,21 @@ def kill(cancellation_token, time):
             
     killthread.stop()
     killthread = None
+
+def eatsnakemeat():
+    openinventory()
+    pos = [0, 0]
+    
+    while pos[0] is not -1:
+        pos = imagesearch_numLoop("./common/samples/drops/snakemeat.png", 0.1, 5)
+
+        if pos[0] != -1:
+            moveto(pos, 10)
+            sleep(0.1)
+            click(2, 0.05)
+            moveto((10, 10))
+
+    closeinventory()
 
 ### EQUIP ###
 
@@ -282,7 +305,9 @@ def followwpts(cancellation_token, wpts, locationstop=None):
 
 def runto(direction, coords, delay=0.02, locationstop=None):
         sleep(delay)
-        current_loc = getlocation()
+        current_loc = OCR.getlocation()
+
+        print(current_loc)
 
         if locationstop is not None and current_loc is not None:
             if current_loc[0].find(locationstop) != -1:
@@ -291,8 +316,8 @@ def runto(direction, coords, delay=0.02, locationstop=None):
 
         if current_loc is not None:
             current = current_loc[1]
-            currentX = re.sub('[^0-9]', '', current[0])
-            currentY = re.sub('[^0-9]', '', current[1])
+            currentX = re.sub('[^0-9]', '', str(current[0]))
+            currentY = re.sub('[^0-9]', '', str(current[1]))
             direction[0] = int(currentX) - coords[0]
             direction[1] = int(currentY) - coords[1]
         else:
