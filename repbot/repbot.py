@@ -1,9 +1,12 @@
 import re
+
 from time import sleep, time
-from CancellationToken import CancellationToken
+
 from threading import Thread
-from ocr import OCR
-from inputcontrol import keypress, keyup
+
+from lib.CancellationToken import CancellationToken
+from lib.ocr import OCR
+from lib.inputcontrol import keypress, keyup
 
 class RepBotThread(object):
     def __init__(self):

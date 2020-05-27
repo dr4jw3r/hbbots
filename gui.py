@@ -1,6 +1,6 @@
 import tkinter as tk
-from hotkeyhandler import HotkeyHandler
-from pfmwatcher import PfmWatcherThread
+
+from core.hotkeyhandler import HotkeyHandler
 
 # Labels
 LABELS = [
