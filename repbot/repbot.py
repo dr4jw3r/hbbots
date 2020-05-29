@@ -57,6 +57,7 @@ class RepBotThread(object):
                         tr_string = "/traderep " + name
                         
                         # check functioning while killing
+                        sleep(1)
                         self.sendmessage(tr_string)
                         self.reptime = -1
                         sleep(10)

@@ -5,9 +5,11 @@ from lib.CancellationToken import CancellationToken
 from time import sleep
 
 from levelbot.levelbot_common import *
+from lib.common import *
 
 class LevellingBotThread(object):
-    def __init__(self, start_at_pit):
+    def __init__(self, start_at_pit, meat_type):
+        self.meat_type = meat_type
         self.start_at_pit = start_at_pit
         self.cancellation_token = CancellationToken()
 
@@ -19,10 +21,9 @@ class LevellingBotThread(object):
         thread.start()
 
     def run(self):
-
         sleep(1)
 
-        while not self.cancellation_token.is_cancelled:
+        while not self.cancellation_token.is_cancelled:            
             if not self.start_at_pit:
                 print("Equip staff")
                 equipstaff()
@@ -39,20 +40,30 @@ class LevellingBotThread(object):
                 print("Chugging pots")
                 chugpots()
 
-                print("Disenchanting and eating snake meat")
+                if self.cancellation_token.is_cancelled:
+                    break
+
+                has_eaten_meat = False
                 for i in range(2):
                     if self.cancellation_token.is_cancelled:
                         break
 
-                    eatsnakemeat()
-                    sleep(0.1)
+                    print("Eating Meat")
+                    if self.meat_type is not None:
+                        has_meat = eatmeat(self.meat_type)
 
+                        if has_meat:
+                            has_eaten_meat = True
+
+                        sleep(0.5)
+            
                     if self.cancellation_token.is_cancelled:
                         break
 
-                    disenchant()
-                    sleep(0.1)
-                
+                    print("Disenchanting")
+                    disenchant(self.cancellation_token)
+                    sleep(0.5)
+
                 if self.cancellation_token.is_cancelled:
                     break
 
@@ -80,8 +91,9 @@ class LevellingBotThread(object):
                 if self.cancellation_token.is_cancelled:
                     break            
 
-                print("Eating")
-                eat(self.cancellation_token, 3)
+                if not has_eaten_meat:
+                    print("Eating")
+                    eat(self.cancellation_token, 3)
 
                 if self.cancellation_token.is_cancelled:
                     break
@@ -96,7 +108,8 @@ class LevellingBotThread(object):
                 print("Going to pit")
                 PIT_WPTS = [
                     [160, 85],
-                    [211, 64]
+                    [211, 64],
+                    [215, 59]
                 ]
                 followwpts(self.cancellation_token, PIT_WPTS)
 
@@ -109,6 +122,10 @@ class LevellingBotThread(object):
             print("Killing")
             kill(self.cancellation_token, self.kill_time)
             
+            if checkifdead():
+                restart()
+                continue
+
             if self.cancellation_token.is_cancelled:
                 break
 

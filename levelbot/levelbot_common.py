@@ -2,85 +2,22 @@ import re
 
 from time import sleep, time
 
-from lib.inputcontrol import keypress, keydown, keyup, moveto, click, clickright
+from lib.inputcontrol import keypress, keydown, keyup, moveto, click, clickright, leftdown as mouseleftdown, leftup as mouseleftup
 from lib.imagesearch import imagesearch, imagesearch_numLoop
 from lib.ocr import OCR
 from lib.charmove import *
+from lib.inventory import openinventory, closeinventory, defaultposition, weaponsposition, wandposition, inventorypositions
+from lib.common import checkifdead, restart
 
 from lib.threads.castspell import CastSpellThread
 from lib.threads.killaround import KillAroundThread
 
 OCR = OCR()
 
-STAFF_POSITION = (653, 439)
 SELF_POSITION = (400, 280)
-DEFAULT_INVENTORY_POSITION = (583, 362)
-WEAPON_POSITION = (522, 468)
-INVENTORY_POSITIONS = [
-    (567, 349),
-    (585, 352),
-    (574, 357),
-    (586, 370),
-    (572, 368)
-]
-
 DISENCHANT_TIME = 5
 
 ### ACTIONS ###
-
-def openinventory():
-    pos = imagesearch_numLoop("./common/samples/misc/inventory_bar.png", 0.1, 5)
-    
-    if pos[0] is not -1:
-        return
-    else:
-        keypress("f6")
-    
-
-def closeinventory():
-    pos = imagesearch_numLoop("./common/samples/misc/inventory_bar.png", 0.1, 5)
-    
-    if pos[0] is not -1:
-        keypress("f6")
-    else:
-        return
-
-def chugpots():
-     for i in range(0, 10):
-        keypress("1")
-        sleep(0.1)
-        keypress("2")
-        sleep(0.1)
-        keypress("3")
-        sleep(0.1)
-
-def disenchant():
-    openinventory()
-    keydown("ctrlleft")
-    keypress("e")
-    keyup("ctrlleft")
-
-    sleep(0.1)
-    pos = imagesearch_numLoop("./common/samples/buttons/disenchant_main.png", 0.1, 10)
-    moveto(pos,20)
-    sleep(0.2)
-    click()
-
-    for position in INVENTORY_POSITIONS:
-        moveto(position)
-        sleep(0.1)
-        click(10, 0.05)
-
-    sleep(5)
-
-    pos = imagesearch_numLoop("./common/samples/buttons/disenchant.png", 0.1, 10)
-    moveto(pos, 15)
-    click()
-    keydown("ctrlleft")
-    keypress("e")
-    keyup("ctrlleft")
-    sleep(0.5)
-    closeinventory()
 
 def repairgear(cancellation_token):
     has_repaired = False
@@ -127,10 +64,10 @@ def sellitems(cancellation_token):
             sleep(0.1)
             click()
 
-            for position in INVENTORY_POSITIONS:
+            for position in inventorypositions():
                 moveto(position)
-                sleep(0.1)
-                click(20, 0.05)
+                sleep(0.01)
+                click(2, 0.01)
 
             # If any items to be sold - click button
             sell_button_pos = imagesearch_numLoop("./common/samples/buttons/sell_items_btn.png", 0.1, 10)
@@ -159,7 +96,7 @@ def eat(cancellation_token, number):
     clickright()
     sleep(1)
     openinventory()
-    moveto(DEFAULT_INVENTORY_POSITION)
+    moveto(defaultposition())
     sleep(0.1)
     click(number * 2, 0.05)
     sleep(0.05)
@@ -177,48 +114,21 @@ def kill(cancellation_token, time):
             killthread = None
             return
 
-        current_time = currentmillis()
+        if checkifdead():
+            break
 
-        if OCR.inventoryfull():
-            killthread.stop()
-            killthread = None
-
-            chugpots()
-            sleep(0.5)
-            eatsnakemeat()
-            sleep(0.5)
-            disenchant()
-            sleep(0.5)
-            eatsnakemeat()
-
-            killthread = KillAroundThread()
+        current_time = currentmillis()   
 
         sleep(1)
             
     killthread.stop()
     killthread = None
 
-def eatsnakemeat():
-    moveto((10, 10))
-    openinventory()
-    pos = [0, 0]
-    
-    while pos[0] is not -1:
-        pos = imagesearch_numLoop("./common/samples/drops/snakemeat.png", 0.1, 5)
-
-        if pos[0] != -1:
-            moveto(pos, 10)
-            sleep(0.1)
-            click(2, 0.05)
-            moveto((10, 10))
-
-    closeinventory()
-
 ### EQUIP ###
 
 def equipstaff():
     openinventory()
-    moveto(STAFF_POSITION)
+    moveto(wandposition())
     sleep(0.05)
     keydown("ctrlleft")
     click()
@@ -228,7 +138,7 @@ def equipstaff():
 
 def equipweapon():
     openinventory()
-    moveto(WEAPON_POSITION)
+    moveto(weaponsposition())
     sleep(0.1)
     keydown("ctrlleft")
     click()

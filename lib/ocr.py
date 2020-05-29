@@ -74,10 +74,10 @@ class OCR(object):
     def readchat(self, query):
         processed = self._process_chat_image(region_grabber((15, 125, 285, 150)))
 
-        res = pytesseract.image_to_string(processed)
+        res = pytesseract.image_to_string(processed).lower()
 
         for q in query:
-            if res.find(q) == -1:
+            if res.find(q.lower()) == -1:
                 return None
         
         return res
@@ -85,6 +85,8 @@ class OCR(object):
     def reptime(self):
         img = region_grabber((12, 520, 400, 540))
         img = self._process_image(img, self.COLOR_GREEN)
+
+        img.save("rep_proc.png")
 
         res = pytesseract.image_to_string(img)
         
@@ -98,9 +100,9 @@ class OCR(object):
         return -1
 
     def inventoryfull(self):
-        img = region_grabber((12, 520, 100, 540))
+        img = region_grabber((12, 505, 100, 540))
         img = img.convert("RGB")
-        
+
         data = np.array(img)
         rgb = data[:,:,:3]
         
@@ -111,10 +113,12 @@ class OCR(object):
         data[mask] = self.COLOR_BLACK
 
         img = Image.fromarray(data)
+        img.save("inventory.png")
+
         
         res = pytesseract.image_to_string(img)
 
-        keywords = ["bag", "full"]
+        keywords = ["bag", "ful"]
         for kw in keywords:
             if res.find(kw) == -1:
                 return False

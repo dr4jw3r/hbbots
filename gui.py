@@ -13,6 +13,7 @@ LABELS = [
     ("CTRL + ALT + SHIFT + Y", "Advert Bot"),
     ("CTRL + ALT + SHIFT + T", "Fake AMP Bot"),
     ("CTRL + ALT + SHIFT + R", "Rep Bot"),
+    ("CTRL + ALT + SHIFT + F", "Farm Bot"),
 ]
 
 # Methods

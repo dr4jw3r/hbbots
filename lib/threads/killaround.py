@@ -1,17 +1,23 @@
 import random
 #====
 from threading import Thread
-from time import sleep
+from time import sleep, time
 #====
 from lib.imagesearch import *
 from lib.inputcontrol import *
 from lib.pickup_gold import checkforgold
 from lib.pickup_drops import checkfordrops
+from lib.common import chugpots, disenchant, eatmeat, checkifdead
+from lib.ocr import OCR
+from lib.CancellationToken import CancellationToken
 #====
 
 class KillAroundThread(object):
-    def __init__(self, singlescan=False):
+    def __init__(self, meat_type=None, singlescan=False):
+        self.meat_type = meat_type
         self.singlescan = singlescan
+        self.OCR = OCR()
+        self.cancellation_token = CancellationToken()
         self.POSITIONS = [
             ( 367, 260 ),
             ( 397, 260 ),
@@ -48,11 +54,29 @@ class KillAroundThread(object):
         thread.daemon = True
         thread.start()
 
+    def checkinventory(self):
+        if self.OCR.inventoryfull():
+            rightup()
+            chugpots()
+            sleep(0.5)
+
+            if self.meat_type is not None:
+                eatmeat(self.meat_type)
+                sleep(0.5)
+            
+            disenchant(self.cancellation_token)
+            sleep(0.5)
+
+            if self.meat_type is not None:
+                eatmeat(self.meat_type)
+
     def finddrops(self):
         self.dropindex += 1
         if self.dropindex % 10 == 1:
             self.dropindex = 1
-            checkfordrops()
+            return checkfordrops()
+
+        return False
 
     def run(self):
         CRITCOUNTER = 30
@@ -64,7 +88,7 @@ class KillAroundThread(object):
         clickleftcount = 0
         indexes = random.sample(range(0, 8), 8)
 
-        while self.keeprunning:                   
+        while self.keeprunning:                           
             if scancount >= 3:
                 scanouter = True
 
@@ -76,16 +100,23 @@ class KillAroundThread(object):
             sleep(0.08)
 
             if not scanouter and indexes[index] >= 0 and indexes[index] <= 2:
-                precision = 0.45
+                # precision = 0.45
+                precision = 0.4427884615384618
             else:
-                precision = 0.45
+                # precision = 0.45
+                precision = 0.4427884615384618
             
             pos = imagesearch("./common/samples/misc/cursor.png", precision)
 
             # If sword cursor has NOT been found
             if pos[0] == -1:
                 checkforgold()
-                self.finddrops()
+                has_drop = self.finddrops()
+
+                if has_drop:
+                    sleep(0.2)
+                    self.checkinventory()
+
                 critcounter = 0
                 keyup("altleft")
                 rightup()
@@ -135,6 +166,10 @@ class KillAroundThread(object):
                 scancount = 0
                 scanouter = False
 
+            if checkifdead():
+                self.stop()
+                break
+
             if critcounter >= CRITCOUNTER:
                 keydown("altleft")
                 if critcounter >= CRITCOUNTER * 2.5:
@@ -146,4 +181,8 @@ class KillAroundThread(object):
         rightup()
 
     def stop(self):
+        keyup("altleft")
+        keyup("ctrlleft")
+        rightup()
+
         self.keeprunning = False

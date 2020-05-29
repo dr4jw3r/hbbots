@@ -43,6 +43,8 @@ DROPS = [
     ("scorpionsting",   0.7, True)
 ]
 
+MODIFIER = 0.15
+
 def stringify_drop(drop):
     return "(\"{0}\",\t\t\t{1}, {2})".format(drop[0], drop[1], drop[2])
 
@@ -68,7 +70,12 @@ for i in range(len(DROPS)):
             
         results.append(precision)
 
-    average = (sum(results) / len(results)) + 0.18
+    # average = (sum(results) / len(results)) + 0.18
+    del results[results.index(max(results))]
+    del results[results.index(min(results))]
+
+    average = (sum(results) / len(results)) + MODIFIER
+
     PROCESSED.append((DROPS[i][0], average, DROPS[i][2]))
 
 with open("./lib/drops.py", "w") as f:

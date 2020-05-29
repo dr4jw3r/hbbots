@@ -17,11 +17,12 @@ from lib.threads.mpregen import MpRegenThread
 from orcbot.orcbot import OrcThread
 from levelbot.levelbot import LevellingBotThread
 from repbot.repbot import RepBotThread
-
+from farmbot.farmbot import FarmThread
 
 class HotkeyHandler():
     def __init__(self):
         self.repthread = None
+        self.farmthread = None
         self.currentthread = None
         self.mpregenbotthread = None
         self.alchemypositions = [None] * 7
@@ -39,7 +40,7 @@ class HotkeyHandler():
             self.currentthread.stop()
             self.currentthread = None
         elif action == "killaround":
-            self.currentthread = KillAroundThread()
+            self.currentthread = KillAroundThread(meat_type="scorpionmeat")
         elif action == "orcbot":
             self.currentthread = OrcThread()
         elif action == "holdright":
@@ -60,10 +61,16 @@ class HotkeyHandler():
             else:
                 self.repthread.stop()
                 self.repthread = None
+        elif action == "farmbot":
+            if self.farmthread is None:
+                self.farmthread = FarmThread("watermelon")
+            else:
+                self.farmthread.stop()
+                self.farmthread = None
         elif action == "levellingbot":
-            self.currentthread = LevellingBotThread(False)
+            self.currentthread = LevellingBotThread(False, "snakemeat")
         elif action == "levellingbot_pit":
-            self.currentthread = LevellingBotThread(True)
+            self.currentthread = LevellingBotThread(True, "snakemeat")
         elif action == "logcursor":
             print(position())
 
@@ -92,6 +99,7 @@ class HotkeyHandler():
         hk.register(("control", "alt", "shift", "y"), "adbot")
         hk.register(("control", "alt", "shift", "t"), "fakeampbot")
         hk.register(("control", "alt", "shift", "r"), "repbot")
+        hk.register(("control", "alt", "shift", "x"), "farmbot")
         hk.register(("control", "alt", "shift", "q"), "logcursor")
         # =======
         hk.register(("alt", "1"), "cast_invisibility")
