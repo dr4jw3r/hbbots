@@ -238,12 +238,14 @@ def sellproduce(produce, cancellation_token):
     clicknpc("shopkeeper", cancellation_token)
     clickbutton("sell_items_store", cancellation_token)
 
-    produce_pos = imagesearch_numLoop("./common/samples/inventory/" + produce + ".png", 0.1, 5)
+    produce_pos = imagesearch_numLoop("./common/samples/inventory/" + produce + ".png", 0.1, 5, precision=0.7)
+
+    print(produce_pos)
+
     moveto(produce_pos, 10)
     sleep(0.1)
-    click(2)
+    click(40, 0.02)
     sleep(0.1)
-    keypress("enter")
 
     # If any items to be sold - click button
     sell_button_pos = imagesearch_numLoop("./common/samples/buttons/sell_items_btn.png", 0.1, 10)
