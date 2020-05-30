@@ -1,4 +1,5 @@
-from lib.imagesearch import imagesearch_numLoop, imagesearcharea
+from copy import deepcopy
+from lib.imagesearch import imagesearch_numLoop, imagesearcharea, region_grabber
 from lib.inputcontrol import keypress
 
 INVENTORY_IMAGE = "./common/samples/inventory/inventory.png"
@@ -10,6 +11,13 @@ WEAPONS_OFFSET = (22, 182)
 
 DISENCHANT_OFFSET = 6
 
+HOE_AREAS = [
+    [(225, 25), (270, 70)],
+    [(225, 65), (270, 110)],
+    [(225, 110), (270, 155)],
+    [(225, 155), (270, 200)]
+]
+
 # needs to be odd
 DISENCHANT_STEPS = 5
 
@@ -17,6 +25,7 @@ def _addoffset(pos, offset):
     return (pos[0] + offset[0], pos[1] + offset[1])
 
 def _findcorner():
+    openinventory()
     text_pos = imagesearch_numLoop(INVENTORY_IMAGE, 0.1, 5)
     
     if text_pos[0] is not -1:
@@ -24,8 +33,35 @@ def _findcorner():
 
     return None
 
+def getbounds():
+    corner = _findcorner()
+    corner2 = (corner[0] + INVENTORY_WINDOW_SIZE[0], corner[1] + INVENTORY_WINDOW_SIZE[1])
+    return (corner, corner2)
+
 def defaultposition():
     return _addoffset(_findcorner(), DEFAULT_POSITION_OFFSET)
+
+def hoepositions():
+    hoe_offset = 5 
+    hoe_img = "./common/samples/inventory/hoe.png"
+    corner = _findcorner()
+
+    positions = []
+    
+    for area in HOE_AREAS:
+        x1 = area[0][0] + corner[0]
+        y1 = area[0][1] + corner[1]
+        x2 = area[1][0] + corner[0]
+        y2 = area[1][1] + corner[1]
+
+        pos = imagesearcharea(hoe_img, x1, y1, x2, y2)
+        
+        p1 = x1 + pos[0] + hoe_offset
+        p2 = y1 + pos[1] + hoe_offset
+
+        positions.append((p1, p2))
+
+    return positions
 
 def wandposition():
     WAND_OFFSET = 20

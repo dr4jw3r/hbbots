@@ -54,10 +54,12 @@ returns :
 the top left corner coordinates of the element if found as an array [x,y] or [-1,-1] if not
 
 '''
-def imagesearcharea(image, x1,y1,x2,y2, precision=0.8, im=None) :
+def imagesearcharea(image, x1,y1,x2,y2, precision=0.8, im=None, save=False, name=None) :
     if im is None :
         im = region_grabber(region=(x1, y1, x2, y2))
-        # im.save('testarea.png') # usefull for debugging purposes, this will save the captured region as "testarea.png"
+
+    if save:
+        im.save('./tests/testarea' + name + '.png') # usefull for debugging purposes, this will save the captured region as "testarea.png"
 
     # im.save('testarea.png')
     img_rgb = np.array(im)
@@ -65,12 +67,12 @@ def imagesearcharea(image, x1,y1,x2,y2, precision=0.8, im=None) :
     template = cv2.imread(image, 0)
 
     res = cv2.matchTemplate(img_gray, template, cv2.TM_CCOEFF_NORMED)
+    
     min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)    
 
     if max_val < precision:
         return [-1, -1]
     return max_loc
-
 
 '''
 

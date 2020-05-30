@@ -1,7 +1,9 @@
+from time import sleep
 from lib.inputcontrol import moveto, click
 
 def go(x, y):
     moveto((x, y))
+    sleep(0.05)
     click()
 
 def isclose(direction):

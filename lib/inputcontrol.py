@@ -8,9 +8,12 @@ user32 = windll.user32
 pyautogui.FAILSAFE = False
 pyautogui.PAUSE = 0
 
-def moveto(pos, offset=0, duration=0):
+def moveto(pos, offsetX=0, offsetY=None, duration=0):
     if pos[0] != -1:
-        pos = [x + offset for x in pos]
+        if offsetY is None:
+            offsetY = offsetX
+
+        pos = (pos[0] + offsetX, pos[1] + offsetY)
         pyautogui.moveTo(pos[0], pos[1], duration=duration)
 
 def click(times=1, sleeptime=0, duration=0.05):

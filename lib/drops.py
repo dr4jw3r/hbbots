@@ -27,7 +27,7 @@ DROPS = [
 	("slimejelly",			0.6199038461538466, True),
 	("snakeskin",			0.6141346153846157, True),
 	("snaketeeth",			1.0025961538461536, True),
-	("snaketongue",			0.55, True),
+	("snaketongue",			0.50, True),
 	("antlegs",			0.7020192307692311, True),
 	("antantenna",			0.7585576923076924, True),
 	("scorpionpincer",			0.6701923076923082, True),

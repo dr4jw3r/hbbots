@@ -63,7 +63,13 @@ class HotkeyHandler():
                 self.repthread = None
         elif action == "farmbot":
             if self.farmthread is None:
-                self.farmthread = FarmThread("watermelon")
+                self.farmthread = FarmThread("carrot", False)
+            else:
+                self.farmthread.stop()
+                self.farmthread = None
+        elif action == "farmbot_farm":
+            if self.farmthread is None:
+                self.farmthread = FarmThread("carrot", True)
             else:
                 self.farmthread.stop()
                 self.farmthread = None
@@ -100,6 +106,7 @@ class HotkeyHandler():
         hk.register(("control", "alt", "shift", "t"), "fakeampbot")
         hk.register(("control", "alt", "shift", "r"), "repbot")
         hk.register(("control", "alt", "shift", "x"), "farmbot")
+        hk.register(("control", "alt", "shift", "c"), "farmbot_farm")
         hk.register(("control", "alt", "shift", "q"), "logcursor")
         # =======
         hk.register(("alt", "1"), "cast_invisibility")
@@ -115,7 +122,7 @@ class HotkeyHandler():
         hk.register(("alt", "s"), "cast_greatstaminarecovery")
 
         hk.register(("control", "b"), "cast_berserk")
-        hk.register(("control", "v"), "cast_pfm")
+        # hk.register(("control", "v"), "cast_pfm")
         # =======
         hk.register(("control", "space"), "equipshield")
         # =======

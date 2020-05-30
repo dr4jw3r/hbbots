@@ -113,9 +113,8 @@ class OCR(object):
         data[mask] = self.COLOR_BLACK
 
         img = Image.fromarray(data)
-        img.save("inventory.png")
+        # img.save("inventory.png")
 
-        
         res = pytesseract.image_to_string(img)
 
         keywords = ["bag", "ful"]
@@ -124,3 +123,31 @@ class OCR(object):
                 return False
             
         return True
+
+    def checkexhausted(self):
+        sleep(0.1)
+        img = region_grabber((10, 520, 275, 540))
+        img = self._process_image(img, self.COLOR_LOG)
+        res = pytesseract.image_to_string(img).lower()
+        
+        keywords = ["item", "exhausted"]
+        for kw in keywords:
+            if res.find(kw) == -1:
+                return False
+
+        return True        
+
+    def checkbreak(self):
+        sleep(0.1)
+        img = region_grabber((10, 500, 290, 540))
+        img = self._process_image(img, self.COLOR_LOG)
+        res = pytesseract.image_to_string(img).lower()
+
+        print(res)
+        
+        keywords = ["item", "exhausted"]
+        for kw in keywords:
+            if res.find(kw) == -1:
+                return False
+
+        return True      

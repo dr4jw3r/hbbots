@@ -13,8 +13,9 @@ from lib.CancellationToken import CancellationToken
 #====
 
 class KillAroundThread(object):
-    def __init__(self, meat_type=None, singlescan=False):
+    def __init__(self, meat_type=None, singlescan=False, no_loot=False):
         self.meat_type = meat_type
+        self.no_loot = no_loot
         self.singlescan = singlescan
         self.OCR = OCR()
         self.cancellation_token = CancellationToken()
@@ -50,9 +51,9 @@ class KillAroundThread(object):
         self.keeprunning = True
         self.dropindex = 0
         
-        thread = Thread(target=self.run, args=())
-        thread.daemon = True
-        thread.start()
+        self.thread = Thread(target=self.run, args=())
+        self.thread.daemon = True
+        self.thread.start()
 
     def checkinventory(self):
         if self.OCR.inventoryfull():
@@ -110,12 +111,13 @@ class KillAroundThread(object):
 
             # If sword cursor has NOT been found
             if pos[0] == -1:
-                checkforgold()
-                has_drop = self.finddrops()
+                if not self.no_loot:
+                    checkforgold()
+                    has_drop = self.finddrops()
 
-                if has_drop:
-                    sleep(0.2)
-                    self.checkinventory()
+                    if has_drop:
+                        sleep(0.2)
+                        self.checkinventory()
 
                 critcounter = 0
                 keyup("altleft")
@@ -186,3 +188,6 @@ class KillAroundThread(object):
         rightup()
 
         self.keeprunning = False
+
+    def join(self):
+        self.thread.join()
