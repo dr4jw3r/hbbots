@@ -13,8 +13,24 @@ class Planter(object):
 
     def plantall(self):
         openinventory()
-        self._clickbag()
+
+        for pos in PLANTING_POSITIONS:
+            self.plantsingle(pos)
+            
         closeinventory()
+
+    def plantsingle(self, position):
+        self._clickbag()
+        moveto((position.x, position.y))
+        sleep(0.2)
+        click()
+        sleep(0.05)
+
+    def replant(self, values):
+        for i in range(len(values)):
+            if values[i]:
+                self.plantsingle(PLANTING_POSITIONS[i])
+
 
     def _clickbag(self):
         bag_pos = self._findseedbag()
