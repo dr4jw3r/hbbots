@@ -61,10 +61,7 @@ def _teststage(pos, planting_pos):
 
 def _stopharvest():
     rightup()
-    keyup("ctrlleft")
-
-def checkhoebreak():
-    return OCR.checkbreak()    
+    keyup("ctrlleft")   
 
 def equiphoe(hoe_index):
     openinventory()

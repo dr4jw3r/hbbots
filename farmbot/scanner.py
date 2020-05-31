@@ -46,9 +46,11 @@ class Scanner(object):
         return replant
 
     def scanenemy(self, cancellation_token):
-        SIZE = 40        
-        #  add token
+        SIZE = 80        
         for pos in ENEMY_SCAN_POSITIONS:
+            if cancellation_token.is_cancelled:
+                return False
+
             x1 = pos.x - (SIZE/2)
             y1 = pos.y - (SIZE/2)
             x2 = pos.x + (SIZE/2)
@@ -56,7 +58,7 @@ class Scanner(object):
 
             moveto((pos.x, pos.y))
             sleep(0.08)
-            cursor = imagesearcharea(self.CURSOR_IMAGE, x1, y1, x2, y2, precision=self.CURSOR_PRECISION)
+            cursor = imagesearcharea(self.CURSOR_IMAGE, x1, y1, x2, y2, precision=self.CURSOR_PRECISION, save=True, name=str(time()))
             if cursor[0] != -1:
                 return True
 

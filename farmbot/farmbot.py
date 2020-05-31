@@ -12,6 +12,7 @@ from farmbot.harvester import Harvester
 from farmbot.planter import Planter
 from farmbot.scanner import Scanner
 from farmbot.drophandler import DropHandler
+from farmbot.hoethread import HoeThread
 ###########
 from lib.threads.killaround import KillAroundThread
 
@@ -20,8 +21,7 @@ class FarmThread(object):
         self.start_at_farm = start_at_farm
         self.crop_type = crop_type
         self.sell_mode = sell_mode
-        self.num_hoes = 4
-        self.num_seed_bags_per_hoe = 9
+        self.num_seed_bags = 30
         self.cancellation_token = CancellationToken()
 
         self.harvester = Harvester()
@@ -93,7 +93,7 @@ class FarmThread(object):
                     break
 
                 # Buy seeds
-                buyseeds(self.crop_type, self.num_seed_bags_per_hoe * self.num_hoes, self.cancellation_token)
+                buyseeds(self.crop_type, self.num_seed_bags, self.cancellation_token)
 
                 if self.cancellation_token.is_cancelled:
                     break
@@ -125,24 +125,26 @@ class FarmThread(object):
             # Start at farm point
             self.start_at_farm = False
             hoe_index = 0
-            iterations = ceil(self.num_seed_bags_per_hoe / 3)
 
             verifylocation(self.cancellation_token)
             
             # Plant all seeds
             scan_time = time()
+
             finish_time = time()
+            seedbag_condition = False
+
             enemy_time = time()
-            hoe_time = time()
+            hoe_thread = HoeThread()
 
             # Equip hoe
             hoe_index = self.hoe(hoe_index)
             self.planter.plantall()
 
-            while True:
+            while True:                
                 bag_pos = self.planter.findseedbag()
                 if bag_pos[0] == -1:
-                    break
+                    seedbag_condition = True
 
                 current_time = time()
                 self.harvester.startharvest()
@@ -160,12 +162,10 @@ class FarmThread(object):
                     scan_time = time()
 
                 # to thread
-                # if current_time - hoe_time >= 4:
-                #     self.harvester.stopharvest()
-                #     hoe_break = checkhoebreak()
-                #     if hoe_break:
-                #         hoe_index = self.hoe(hoe_index)
-                #     hoe_time = time()
+                if hoe_thread.ishoebroken():
+                    self.harvester.stopharvest()
+                    hoe_index = self.hoe(hoe_index)
+                    hoe_thread.acknowledge()
 
                 if current_time - enemy_time >= 30:
                     has_enemy = self.scanner.scanenemy(self.cancellation_token)
@@ -180,7 +180,7 @@ class FarmThread(object):
 
                 # after 4 minutes harvest all
                 # 240
-                if current_time - finish_time >= 60:
+                if (current_time - finish_time >= 240) or seedbag_condition:
                     replant = self.scanner.scan()
                     for i in range(len(replant)):
                         if not replant[i]:
@@ -191,8 +191,10 @@ class FarmThread(object):
                     verifylocation(self.cancellation_token)
                     finish_time = time()
                     hoe_index += 1
-
+                
                 self.harvester.stopharvest()
+                if seedbag_condition:
+                    break
                 
     def stop(self):
         self.cancellation_token.cancel()
