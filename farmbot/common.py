@@ -235,24 +235,27 @@ def buyseeds(seeds, amount=24, cancellation_token=None):
     clickright()
 
 def sellproduce(produce, cancellation_token):
-    clicknpc("shopkeeper", cancellation_token)
-    clickbutton("sell_items_store", cancellation_token)
+    produce_pos = (0, 0)
+    while produce_pos[0] != -1:
+        openinventory()
+        sleep(0.05)
+        produce_pos = imagesearch_numLoop("./common/samples/inventory/" + produce + ".png", 0.1, 5, precision=0.7)
+        closeinventory()
 
-    produce_pos = imagesearch_numLoop("./common/samples/inventory/" + produce + ".png", 0.1, 5, precision=0.7)
+        if produce_pos[0] == -1:
+            break
 
-    print(produce_pos)
+        clicknpc("shopkeeper", cancellation_token)
+        clickbutton("sell_items_store", cancellation_token)
+        moveto(produce_pos, 5)
+        click(18, 0.02)
 
-    moveto(produce_pos, 10)
-    sleep(0.1)
-    click(40, 0.02)
-    sleep(0.1)
-
-    # If any items to be sold - click button
-    sell_button_pos = imagesearch_numLoop("./common/samples/buttons/sell_items_btn.png", 0.1, 10)
-    moveto(sell_button_pos, 10)
-    sleep(0.1)
-    click()
-    sleep(1)
+        # If any items to be sold - click button
+        sell_button_pos = imagesearch_numLoop("./common/samples/buttons/sell_items_btn.png", 0.1, 10)
+        moveto(sell_button_pos, 10)
+        sleep(0.1)
+        click()
+        sleep(1)
 
     # If no items to be sold, close the list
     sell_list_pos = imagesearch_numLoop("./common/samples/misc/sell_list.png", 0.1, 5)
