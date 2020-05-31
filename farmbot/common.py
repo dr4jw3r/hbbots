@@ -66,47 +66,6 @@ def _stopharvest():
 def checkhoebreak():
     return OCR.checkbreak()    
 
-def isdrop(position, cursor_position, produce):
-    moveto((0, 0))
-    sleep(0.1)
-    image = "./common/samples/produce/" + produce + ".png"
-    drop_position = imagesearcharea(image, position[0], position[1], position[0] + DROP_BOX_SIZE[0], position[1] + DROP_BOX_SIZE[1], precision=0.55)
-    moveto(cursor_position)
-    if drop_position[0] is not -1:
-        return True
-    else:
-        return False
-
-def plantseeds(cancellation_token):
-    has_planted = False
-    openinventory()    
-    b = getbounds()    
-
-    for pos in PLANTING_POSITIONS:
-        if cancellation_token.is_cancelled:
-            break
-
-        sleep(0.08)
-        seed_bag_pos = imagesearcharea("./common/samples/inventory/seed_bag.png", b[0][0], b[0][1], b[1][0], b[1][1], 0.7)
-
-        if seed_bag_pos[0] == -1:
-            continue
-
-        seed_bag_pos = (seed_bag_pos[0] + b[0][0], seed_bag_pos[1] + b[0][1])
-
-        moveto(seed_bag_pos, 5, 5)
-        sleep(0.1)
-        click(2)
-        sleep(0.1)
-        moveto(pos)
-        sleep(0.1)
-        click()
-        has_planted = True
-
-    closeinventory()
-    sleep(0.05)
-    return has_planted
-
 def equiphoe(hoe_index):
     openinventory()
     sleep(0.05)
@@ -150,23 +109,28 @@ def buyseeds(seeds, amount=24, cancellation_token=None):
     clickbutton("purchase", cancellation_token, 5, 5)
     clickright()
 
-def sellproduce(produce, cancellation_token):
-    clicknpc("shopkeeper", cancellation_token)
-    clickbutton("sell_items_store", cancellation_token)
+def sellproduce(produce, sell_mode, cancellation_token):
+    produce_pos = (0, 0)
+    while produce_pos[0] != -1:
+        openinventory()
+        sleep(0.05)
+        produce_pos = imagesearch_numLoop("./common/samples/inventory/" + produce + ".png", 0.1, 5, precision=0.7)
+        closeinventory()
 
-    produce_pos = imagesearch_numLoop("./common/samples/inventory/" + produce + ".png", 0.1, 5)
-    moveto(produce_pos, 10)
-    sleep(0.1)
-    click(2)
-    sleep(0.1)
-    keypress("enter")
+        if produce_pos[0] == -1:
+            break
 
-    # If any items to be sold - click button
-    sell_button_pos = imagesearch_numLoop("./common/samples/buttons/sell_items_btn.png", 0.1, 10)
-    moveto(sell_button_pos, 10)
-    sleep(0.1)
-    click()
-    sleep(1)
+        clicknpc("shopkeeper", cancellation_token)
+        clickbutton("sell_items_store", cancellation_token)
+        moveto(produce_pos, 5)
+        click(18, 0.02)
+
+        # If any items to be sold - click button
+        sell_button_pos = imagesearch_numLoop("./common/samples/buttons/sell_items_btn.png", 0.1, 10)
+        moveto(sell_button_pos, 10)
+        sleep(0.1)
+        click()
+        sleep(1)
 
     # If no items to be sold, close the list
     sell_list_pos = imagesearch_numLoop("./common/samples/misc/sell_list.png", 0.1, 5)

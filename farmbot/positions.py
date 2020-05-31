@@ -1,9 +1,10 @@
 class Position(object):
-    def __init__(self, x, y, description):
+    def __init__(self, x, y, description=None):
         self.x = x
         self.y = y
         self.description = description
 
+SELF_POSITION = (400, 280)
 PLANTING_POSITIONS = [
     Position(397, 337, "center"),
     Position(368, 335, "left"),
@@ -22,4 +23,15 @@ DROP_BOX_POSITIONS = [
     Position(380, 315, "center"),
     Position(345, 315, "left"),
     Position(410, 315, "right")
+]
+
+ENEMY_SCAN_POSITIONS = [
+    Position(367, 260),
+    Position(397, 260),
+    Position(430, 260),
+    Position(433, 305),
+    Position(433, 333),
+    Position(396, 333),
+    Position(367, 330),
+    Position(367, 300)
 ]

@@ -20,25 +20,22 @@ class Planter(object):
         closeinventory()
 
     def plantsingle(self, position):
-        self._clickbag()
-        moveto((position.x, position.y))
-        sleep(0.2)
-        click()
-        sleep(0.05)
+        has_bag = self._clickbag()
+        if has_bag:
+            moveto((position.x, position.y))
+            sleep(0.2)
+            click()
+            sleep(0.05)
+
+        return has_bag
 
     def replant(self, values):
         for i in range(len(values)):
             if values[i]:
                 self.plantsingle(PLANTING_POSITIONS[i])
-
-
-    def _clickbag(self):
-        bag_pos = self._findseedbag()
-        moveto(bag_pos)
-        sleep(0.05)
-        click(2)
-
-    def _findseedbag(self):
+    
+    def findseedbag(self):
+        openinventory()
         RETRY_COUNT = 5
         BAG_OFFSET = 10
         bounds = getbounds()
@@ -55,4 +52,13 @@ class Planter(object):
 
         return (-1, -1)
 
-    
+    def _clickbag(self):
+        bag_pos = self.findseedbag()
+
+        if bag_pos[0] == -1:
+            return False
+
+        moveto(bag_pos)
+        sleep(0.05)
+        click(2)
+        return True    

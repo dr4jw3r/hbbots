@@ -138,13 +138,9 @@ class OCR(object):
         return True        
 
     def checkbreak(self):
-        sleep(0.1)
         img = region_grabber((10, 500, 290, 540))
         img = self._process_image(img, self.COLOR_LOG)
         res = pytesseract.image_to_string(img).lower()
-
-        print(res)
-        
         keywords = ["item", "exhausted"]
         for kw in keywords:
             if res.find(kw) == -1:

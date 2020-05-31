@@ -11,13 +11,15 @@ from levelbot.levelbot_common import equipweapon
 from farmbot.harvester import Harvester
 from farmbot.planter import Planter
 from farmbot.scanner import Scanner
+from farmbot.drophandler import DropHandler
 ###########
 from lib.threads.killaround import KillAroundThread
 
 class FarmThread(object):
-    def __init__(self, crop_type, start_at_farm):
+    def __init__(self, crop_type, sell_mode, start_at_farm):
         self.start_at_farm = start_at_farm
         self.crop_type = crop_type
+        self.sell_mode = sell_mode
         self.num_hoes = 4
         self.num_seed_bags_per_hoe = 9
         self.cancellation_token = CancellationToken()
@@ -25,10 +27,21 @@ class FarmThread(object):
         self.harvester = Harvester()
         self.planter = Planter()
         self.scanner = Scanner()
+        self.drop_handler = DropHandler()
 
         thread = Thread(target=self.run, args=())
         thread.daemon = True
         thread.start()
+
+    def hoe(self, index):
+        hoe_equipped = False
+        while not hoe_equipped:
+            hoe_equipped = equiphoe(index)
+
+            if not hoe_equipped:
+                index += 1
+
+        return index
 
     def run(self):
         sleep(1)
@@ -37,14 +50,13 @@ class FarmThread(object):
             if not self.start_at_farm:
                 if self.cancellation_token.is_cancelled:
                     break
-                # # Equip staff
+                # Equip staff
                 equipstaff()
 
                 if self.cancellation_token.is_cancelled:
                     break
 
-                # # Recall
-                # recall(self.cancellation_token)
+                # Recall
                 saferecall(self.cancellation_token)
                 
                 if self.cancellation_token.is_cancelled:
@@ -63,19 +75,19 @@ class FarmThread(object):
                     break
 
                 # # Recall again
-                recall(self.cancellation_token)
+                saferecall(self.cancellation_token)
 
                 if self.cancellation_token.is_cancelled:
                     break
 
-                # # Go to shop
+                # Go to shop
                 gotoshop_fromrecall(self.cancellation_token)
 
                 if self.cancellation_token.is_cancelled:
                     break
 
-                # # Sell produce
-                sellproduce(self.crop_type, self.cancellation_token)
+                # Sell produce
+                sellproduce(self.crop_type, self.sell_mode, self.cancellation_token)
 
                 if self.cancellation_token.is_cancelled:
                     break
@@ -93,7 +105,7 @@ class FarmThread(object):
                     break
 
                 # Recall back to farm
-                recall(self.cancellation_token)
+                saferecall(self.cancellation_token)
 
                 if self.cancellation_token.is_cancelled:
                     break
@@ -112,17 +124,26 @@ class FarmThread(object):
             
             # Start at farm point
             self.start_at_farm = False
+            hoe_index = 0
             iterations = ceil(self.num_seed_bags_per_hoe / 3)
 
-            # Equip hoe
-            # equiphoe(0)
+            verifylocation(self.cancellation_token)
             
             # Plant all seeds
-            self.planter.plantall()
             scan_time = time()
             finish_time = time()
+            enemy_time = time()
+            hoe_time = time()
+
+            # Equip hoe
+            hoe_index = self.hoe(hoe_index)
+            self.planter.plantall()
 
             while True:
+                bag_pos = self.planter.findseedbag()
+                if bag_pos[0] == -1:
+                    break
+
                 current_time = time()
                 self.harvester.startharvest()
 
@@ -131,25 +152,45 @@ class FarmThread(object):
                 if self.cancellation_token.is_cancelled:
                     break
 
-                # every 2 seconds check
+                # every 1 seconds check
                 if current_time - scan_time >= 1:
                     self.harvester.stopharvest()
                     replant = self.scanner.scan()
                     self.planter.replant(replant)
                     scan_time = time()
 
+                # to thread
+                # if current_time - hoe_time >= 4:
+                #     self.harvester.stopharvest()
+                #     hoe_break = checkhoebreak()
+                #     if hoe_break:
+                #         hoe_index = self.hoe(hoe_index)
+                #     hoe_time = time()
+
+                if current_time - enemy_time >= 30:
+                    has_enemy = self.scanner.scanenemy(self.cancellation_token)
+                    if has_enemy:
+                        equipweapon()
+                        kt = KillAroundThread(singlescan=True, no_loot=True)
+                        kt.join()
+
+                        self.hoe(hoe_index)
+
+                    enemy_time = time()
+
                 # after 4 minutes harvest all
                 # 240
-                if current_time - finish_time >= 10:
+                if current_time - finish_time >= 60:
                     replant = self.scanner.scan()
                     for i in range(len(replant)):
                         if not replant[i]:
                             self.harvester.harvestsingle(i, self.cancellation_token)
                     
-                    # check for drops here
-                    self.scanner.scandrops(self.crop_type)
-
+                    # check for drops here (organised left to right)
+                    self.drop_handler.pickup(self.crop_type)
+                    verifylocation(self.cancellation_token)
                     finish_time = time()
+                    hoe_index += 1
 
                 self.harvester.stopharvest()
                 

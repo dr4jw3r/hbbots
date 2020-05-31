@@ -96,7 +96,7 @@ def inventorypositions():
     return positions
 
 def openinventory():
-    pos = imagesearch_numLoop(INVENTORY_IMAGE, 0.1, 5)
+    pos = imagesearch_numLoop(INVENTORY_IMAGE, 0.1, 1)
     
     if pos[0] is not -1:
         return
@@ -104,7 +104,7 @@ def openinventory():
         keypress("f6")
 
 def closeinventory():
-    pos = imagesearch_numLoop(INVENTORY_IMAGE, 0.1, 5)
+    pos = imagesearch_numLoop(INVENTORY_IMAGE, 0.1, 1)
     
     if pos[0] is not -1:
         keypress("f6")

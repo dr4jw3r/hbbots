@@ -60,6 +60,7 @@ def imagesearcharea(image, x1,y1,x2,y2, precision=0.8, im=None, save=False, name
 
     if save:
         im.save('./tests/testarea' + name + '.png') # usefull for debugging purposes, this will save the captured region as "testarea.png"
+    im.save('./tests/testarea.png') # usefull for debugging purposes, this will save the captured region as "testarea.png"
 
     # im.save('testarea.png')
     img_rgb = np.array(im)

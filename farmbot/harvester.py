@@ -24,7 +24,7 @@ class Harvester(object):
         while crop_stage is not -1:
             if cancellation_token.is_cancelled:
                 break
-                
+            # hoe break
             self._movetoposition(PLANTING_POSITIONS[index])
             sleep(0.5)
             crop_stage = self.scanner.getcropstage(TEST_BOX_POSITIONS[index])

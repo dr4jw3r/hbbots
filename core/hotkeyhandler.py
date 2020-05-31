@@ -63,13 +63,13 @@ class HotkeyHandler():
                 self.repthread = None
         elif action == "farmbot":
             if self.farmthread is None:
-                self.farmthread = FarmThread("corn", False)
+                self.farmthread = FarmThread("corn", "clicking", False)
             else:
                 self.farmthread.stop()
                 self.farmthread = None
         elif action == "farmbot_farm":
             if self.farmthread is None:
-                self.farmthread = FarmThread("corn", True)
+                self.farmthread = FarmThread("corn", "clicking", True)
             else:
                 self.farmthread.stop()
                 self.farmthread = None
