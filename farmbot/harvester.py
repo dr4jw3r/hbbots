@@ -4,6 +4,8 @@ from lib.inputcontrol import moveto, keydown, keyup, rightdown, rightup
 # 
 from farmbot.scanner import Scanner
 from farmbot.positions import Position, PLANTING_POSITIONS, TEST_BOX_POSITIONS
+# 
+from farmbot.common import equiphoe
 
 class Harvester(object):
     def __init__(self):
@@ -16,17 +18,36 @@ class Harvester(object):
         keydown("ctrlleft")
         rightdown()
 
-    def harvestsingle(self, index, cancellation_token):
+    def hoe(self, index):
+        hoe_equipped = False
+        while not hoe_equipped:
+            hoe_equipped = equiphoe(index)
+
+            if not hoe_equipped:
+                index += 1
+
+        return index
+
+    def harvestsingle(self, index, hoe_thread, hoe_index, cancellation_token):
         keydown("ctrlleft")
-        rightdown()
 
         crop_stage = 0
         while crop_stage is not -1:
+            rightdown()
+
             if cancellation_token.is_cancelled:
                 break
-            # hoe break
+            
+            if hoe_thread.ishoebroken():
+                rightup()
+                hoe_index = self.hoe(hoe_index)
+                hoe_thread.acknowledge()
+
             self._movetoposition(PLANTING_POSITIONS[index])
             sleep(0.5)
+            
+            moveto((400, 600))
+            sleep(0.05)
             crop_stage = self.scanner.getcropstage(TEST_BOX_POSITIONS[index])
 
     def stopharvest(self):

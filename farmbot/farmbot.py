@@ -21,7 +21,7 @@ class FarmThread(object):
         self.start_at_farm = start_at_farm
         self.crop_type = crop_type
         self.sell_mode = sell_mode
-        self.num_seed_bags = 30
+        self.num_seed_bags = 36
         self.cancellation_token = CancellationToken()
 
         self.harvester = Harvester()
@@ -139,7 +139,7 @@ class FarmThread(object):
 
             # Equip hoe
             hoe_index = self.hoe(hoe_index)
-            self.planter.plantall()
+            # self.planter.plantall()
 
             while True:                
                 bag_pos = self.planter.findseedbag()
@@ -156,9 +156,12 @@ class FarmThread(object):
 
                 # every 1 seconds check
                 if current_time - scan_time >= 1:
-                    self.harvester.stopharvest()
                     replant = self.scanner.scan()
-                    self.planter.replant(replant)
+
+                    if any(replant):
+                        self.harvester.stopharvest()
+                        self.planter.replant(replant)
+                    
                     scan_time = time()
 
                 # to thread
@@ -167,9 +170,10 @@ class FarmThread(object):
                     hoe_index = self.hoe(hoe_index)
                     hoe_thread.acknowledge()
 
-                if current_time - enemy_time >= 30:
+                if current_time - enemy_time >= 10:
                     has_enemy = self.scanner.scanenemy(self.cancellation_token)
                     if has_enemy:
+                        self.harvester.stopharvest()
                         equipweapon()
                         kt = KillAroundThread(singlescan=True, no_loot=True)
                         kt.join()
@@ -184,17 +188,29 @@ class FarmThread(object):
                     replant = self.scanner.scan()
                     for i in range(len(replant)):
                         if not replant[i]:
-                            self.harvester.harvestsingle(i, self.cancellation_token)
+                            self.harvester.harvestsingle(i, hoe_thread, hoe_index, self.cancellation_token)
                     
                     # check for drops here (organised left to right)
                     self.drop_handler.pickup(self.crop_type)
-                    verifylocation(self.cancellation_token)
+                    self.harvester.stopharvest()
+                    
+                    if not seedbag_condition:
+                        verifylocation(self.cancellation_token)
+                        
                     finish_time = time()
                     hoe_index += 1
                 
                 self.harvester.stopharvest()
                 if seedbag_condition:
                     break
+
+            self.harvester.stopharvest()
+            hoe_thread.stop()
+            has_enemy = self.scanner.scanenemy(self.cancellation_token)
+            if has_enemy:
+                equipweapon()
+                kt = KillAroundThread(singlescan=True, no_loot=True)
+                kt.join()
                 
     def stop(self):
         self.cancellation_token.cancel()

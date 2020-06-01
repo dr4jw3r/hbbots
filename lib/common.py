@@ -266,8 +266,13 @@ def recall(cancellation_token):
     sleep(2)
 
 def saferecall(cancellation_token):
-    current_location = OCR.getlocation()[0]
-    new_location = current_location
+    current_location = None
+    while current_location is None:
+        current_location = OCR.getlocation()
+
+        if current_location is not None:
+            current_location = current_location[0]
+            new_location = current_location
 
     while current_location is new_location:
         if cancellation_token.is_cancelled:
@@ -325,7 +330,8 @@ def runto(direction, coords, delay=0.02, locationstop=None, tolerance=2):
         direction[0] = int(currentX) - coords[0]
         direction[1] = int(currentY) - coords[1]
     else:
-        current_loc = ["None", direction]
+        direction[0] = 1
+        direction[1] = 1
 
     if direction[0] > 0 and direction[1] > 0:
         leftup(direction)

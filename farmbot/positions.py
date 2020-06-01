@@ -10,6 +10,11 @@ PLANTING_POSITIONS = [
     Position(368, 335, "left"),
     Position(432, 336, "right")
 ]
+SCAN_CURSOR_POSITIONS = [
+    Position(432, 336, "right"),
+    Position(432, 336, "right"),
+    Position(400, 600, "offscreen"),
+]
 
 TEST_BOX_SIZE = (35, 65)
 TEST_BOX_POSITIONS = [

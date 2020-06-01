@@ -2,13 +2,13 @@ from time import sleep, time
 from lib.inputcontrol import moveto
 from lib.imagesearch import imagesearcharea, region_grabber
 
-from farmbot.positions import TEST_BOX_SIZE, TEST_BOX_POSITIONS, DROP_BOX_POSITIONS, DROP_BOX_SIZE, ENEMY_SCAN_POSITIONS
+from farmbot.positions import TEST_BOX_SIZE, TEST_BOX_POSITIONS, DROP_BOX_POSITIONS, DROP_BOX_SIZE, ENEMY_SCAN_POSITIONS, SCAN_CURSOR_POSITIONS
 
 class Scanner(object):
     def __init__(self):
         self.CURSOR_IMAGE = "./common/samples/misc/cursor.png"
         self.CURSOR_PRECISION = 0.4427884615384618
-        self.CROP_STAGE_PRECISION = 0.4
+        self.CROP_STAGE_PRECISION = 0.48
         self.CROP_STAGE_IMAGES = [
             (1, "./common/samples/produce/crop_1.png"),
             (2, "./common/samples/produce/crop_2.png"),
@@ -16,9 +16,6 @@ class Scanner(object):
         ]
 
     def getcropstage(self, position):
-        moveto((400, 600))
-        sleep(0.05)
-
         x2 = position.x + TEST_BOX_SIZE[0]
         y2 = position.y + TEST_BOX_SIZE[1]
 
@@ -34,12 +31,17 @@ class Scanner(object):
         return -1
 
     def scan(self):
-        replant = [False, False, False]        
+        replant = [False, False, False]                    
 
         for i in range(len(TEST_BOX_POSITIONS)):
             position = TEST_BOX_POSITIONS[i]
+            moveto_position = SCAN_CURSOR_POSITIONS[i]
+
+            moveto((moveto_position.x, moveto_position.y))
+            sleep(0.02)
+
             crop_stage = self.getcropstage(position)
-            
+
             if crop_stage == -1:
                 replant[i] = True
 

@@ -6,7 +6,7 @@ from lib.inputcontrol import moveto, click, clickright, keypress, keydown, keyup
 from lib.inventory import openinventory, closeinventory, hoepositions, defaultposition, getbounds
 from lib.ocr import OCR
 
-FARM_WPTS = [(95, 99)]
+FARM_WPTS = [(101, 106)]
 SELF_POSITION = (400, 280)
 PLANTING_POSITIONS = [
     (397, 337),
@@ -79,7 +79,6 @@ def equiphoe(hoe_index):
 
         is_exhausted = OCR.checkexhausted()
 
-    closeinventory()
     # return whether hoe equipped
     return not is_exhausted
 
@@ -89,6 +88,7 @@ def gotofarm_fromrecall(cancellation_token):
 def buyseeds(seeds, amount=24, cancellation_token=None):
     clicknpc("shopkeeper", cancellation_token)
     clickbutton("buy_misc_shop", cancellation_token)
+    scrolldown()
     clickbutton("seed_bag_" + seeds, cancellation_token)
     
     amount_str = str(amount)
@@ -106,21 +106,55 @@ def buyseeds(seeds, amount=24, cancellation_token=None):
     clickbutton("purchase", cancellation_token, 5, 5)
     clickright()
 
+def scrolldown():
+    sleep(0.1)
+    pos = imagesearch_numLoop("./common/samples/buttons/scroll.png", 0.1, 5)
+    moveto(pos, 5, 5)
+    sleep(0.1)
+    leftdown()
+    sleep(0.1)
+    moveto((pos[0], pos[1] + 80))
+    sleep(0.1)
+    leftup()
+    sleep(0.1)
+
 def sellproduce(produce, sell_mode, cancellation_token):
-    produce_pos = (0, 0)
-    while produce_pos[0] != -1:
-        openinventory()
-        sleep(0.05)
-        produce_pos = imagesearch_numLoop("./common/samples/inventory/" + produce + ".png", 0.1, 5, precision=0.7)
-        closeinventory()
+    if sell_mode == "click":
+        produce_pos = (0, 0)
+        while produce_pos[0] != -1:
+            if cancellation_token.is_cancelled:
+                break
 
-        if produce_pos[0] == -1:
-            break
+            openinventory()
+            sleep(0.05)
+            produce_pos = imagesearch_numLoop("./common/samples/inventory/" + produce + ".png", 0.1, 5, precision=0.8)
+            closeinventory()
 
+            if produce_pos[0] == -1:
+                break
+
+            clicknpc("shopkeeper", cancellation_token)
+            clickbutton("sell_items_store", cancellation_token)
+            moveto(produce_pos, 5)
+            click(18, 0.02)
+
+            # If any items to be sold - click button
+            sell_button_pos = imagesearch_numLoop("./common/samples/buttons/sell_items_btn.png", 0.1, 10)
+            moveto(sell_button_pos, 10)
+            sleep(0.1)
+            click()
+            sleep(1)
+
+    elif sell_mode == "enter":
         clicknpc("shopkeeper", cancellation_token)
         clickbutton("sell_items_store", cancellation_token)
-        moveto(produce_pos, 5)
-        click(18, 0.02)
+
+        produce_pos = imagesearch_numLoop("./common/samples/inventory/" + produce + ".png", 0.1, 5)
+        moveto(produce_pos, 10)
+        sleep(0.1)
+        click(2)
+        sleep(0.1)
+        keypress("enter")
 
         # If any items to be sold - click button
         sell_button_pos = imagesearch_numLoop("./common/samples/buttons/sell_items_btn.png", 0.1, 10)
@@ -157,12 +191,4 @@ def moveseeds(cancellation_token):
     keyup("shiftleft")
 
 def verifylocation(cancellation_token):
-    loc = OCR.getlocation()
-
-    print(loc)
-
-    if loc is not None:
-        c = loc[1]
-
-        if c[0] != FARM_WPTS[0] or c[1] != FARM_WPTS[1]:
-            gotofarm_fromrecall(cancellation_token)
+    gotofarm_fromrecall(cancellation_token)
