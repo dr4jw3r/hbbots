@@ -33,4 +33,3 @@ class DropHandler(object):
 
             pos = (pos[0] + self.GRABREGION[0], pos[1] + self.GRABREGION[1])
             self._getdrop(pos)
-        

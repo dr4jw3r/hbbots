@@ -16,12 +16,18 @@ SCAN_CURSOR_POSITIONS = [
     Position(400, 600, "offscreen"),
 ]
 
-TEST_BOX_SIZE = (35, 65)
+# TEST_BOX_SIZE = (35, 65)
+TEST_BOX_SIZE = (32, 32)
 TEST_BOX_POSITIONS = [
-    Position(384, 296, "center"),
-    Position(351, 296, "left"),
-    Position(415, 296, "right")
+    Position(384, 320, "center"),
+    Position(352, 320, "left"),
+    Position(416, 320, "right")
 ]
+# TEST_BOX_POSITIONS = [
+#     Position(384, 296, "center"),
+#     Position(351, 296, "left"),
+#     Position(415, 296, "right")
+# ]
 
 DROP_BOX_SIZE = (40, 40)
 DROP_BOX_POSITIONS = [

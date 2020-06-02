@@ -359,6 +359,7 @@ def runto(direction, coords, delay=0.02, locationstop=None, tolerance=2):
 def gotoblacksmith_fromrecall(cancellation_token):
     has_blacksmith = False
     BS_WPTS = [
+        [58, 101],
         [63, 96],
         [63, 80]
     ]

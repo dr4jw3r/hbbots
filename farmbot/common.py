@@ -5,6 +5,7 @@ from lib.imagesearch import imagesearch_numLoop, imagesearcharea
 from lib.inputcontrol import moveto, click, clickright, keypress, keydown, keyup, leftdown, leftup, rightdown, rightup, position
 from lib.inventory import openinventory, closeinventory, hoepositions, defaultposition, getbounds
 from lib.ocr import OCR
+from pyautogui import screenshot
 
 FARM_WPTS = [(101, 106)]
 SELF_POSITION = (400, 280)
@@ -61,7 +62,6 @@ def _teststage(pos, planting_pos):
 
 def _stopharvest():
     rightup()
-    keyup("ctrlleft")   
 
 def equiphoe(hoe_index):
     openinventory()
@@ -119,6 +119,13 @@ def scrolldown():
     sleep(0.1)
 
 def sellproduce(produce, sell_mode, cancellation_token):
+    # Open Inventory and take a screenshot!
+    openinventory()
+    sleep(0.05)
+    screenshot().save("./sales/{0}.png".format(time()))
+    closeinventory()
+    sleep(0.05)
+
     if sell_mode == "click":
         produce_pos = (0, 0)
         while produce_pos[0] != -1:

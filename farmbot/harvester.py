@@ -1,4 +1,4 @@
-from time import sleep
+from time import sleep, time
 #
 from lib.inputcontrol import moveto, keydown, keyup, rightdown, rightup
 # 
@@ -15,7 +15,6 @@ class Harvester(object):
         # place cursor over middle position
         self._movetoplantingposition("center")
         
-        keydown("ctrlleft")
         rightdown()
 
     def hoe(self, index):
@@ -29,9 +28,10 @@ class Harvester(object):
         return index
 
     def harvestsingle(self, index, hoe_thread, hoe_index, cancellation_token):
-        keydown("ctrlleft")
-
+        timeout = 35
         crop_stage = 0
+        
+        start_time = time()
         while crop_stage is not -1:
             rightdown()
 
@@ -44,14 +44,17 @@ class Harvester(object):
                 hoe_thread.acknowledge()
 
             self._movetoposition(PLANTING_POSITIONS[index])
-            sleep(0.5)
+            sleep(1)
             
             moveto((400, 600))
             sleep(0.05)
             crop_stage = self.scanner.getcropstage(TEST_BOX_POSITIONS[index])
 
+            if time() - start_time >= timeout:
+                print("TIMED OUT")
+                return
+
     def stopharvest(self):
-        keyup("ctrlleft")
         rightup()
 
     def _movetoposition(self, position):

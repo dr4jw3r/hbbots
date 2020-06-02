@@ -1,6 +1,7 @@
 from time import sleep, time
+from cv2 import imread
 from lib.inputcontrol import moveto
-from lib.imagesearch import imagesearcharea, region_grabber
+from lib.imagesearch import imagesearcharea, imagesearcharea2, region_grabber
 
 from farmbot.positions import TEST_BOX_SIZE, TEST_BOX_POSITIONS, DROP_BOX_POSITIONS, DROP_BOX_SIZE, ENEMY_SCAN_POSITIONS, SCAN_CURSOR_POSITIONS
 
@@ -8,11 +9,16 @@ class Scanner(object):
     def __init__(self):
         self.CURSOR_IMAGE = "./common/samples/misc/cursor.png"
         self.CURSOR_PRECISION = 0.4427884615384618
-        self.CROP_STAGE_PRECISION = 0.48
+        self.CROP_STAGE_PRECISION = 0.62
         self.CROP_STAGE_IMAGES = [
-            (1, "./common/samples/produce/crop_1.png"),
-            (2, "./common/samples/produce/crop_2.png"),
-            (3, "./common/samples/produce/crop_3.png")
+            (1, imread("./common/samples/produce/crop_1.png", 0)),
+            (2, imread("./common/samples/produce/crop_2.png", 0)),
+            (3, imread("./common/samples/produce/crop_3.png", 0))
+        ]
+        self.CROP_STAGE_GLOW_IMAGES = [
+            (1, imread("./common/samples/produce/crop_1_glow.png", 0)),
+            (2, imread("./common/samples/produce/crop_2_glow.png", 0)),
+            (3, imread("./common/samples/produce/crop_3_glow.png", 0))
         ]
 
     def getcropstage(self, position):
@@ -23,11 +29,19 @@ class Scanner(object):
         # img.save("cropstage_" + str(time()) + ".png")
 
         for stage in self.CROP_STAGE_IMAGES:
-            crop_pos = imagesearcharea(stage[1], -1, -1, -1, -1, im=img, precision=self.CROP_STAGE_PRECISION)
+            (crop_pos, max_val, sample) = imagesearcharea2(stage[1], im=img, precision=self.CROP_STAGE_PRECISION)
             
             if crop_pos[0] != -1:
                 return stage[0]
 
+        for stage in self.CROP_STAGE_GLOW_IMAGES:
+            (crop_pos, max_val, sample) = imagesearcharea2(stage[1], im=img, precision=self.CROP_STAGE_PRECISION)
+            
+            if crop_pos[0] != -1:
+                return stage[0]
+
+        # print("Crop Not Found: ", max_val)
+        # sample.save("./precisionsamples/{0}.png".format(max_val))
         return -1
 
     def scan(self):
@@ -38,7 +52,7 @@ class Scanner(object):
             moveto_position = SCAN_CURSOR_POSITIONS[i]
 
             moveto((moveto_position.x, moveto_position.y))
-            sleep(0.02)
+            sleep(0.035)
 
             crop_stage = self.getcropstage(position)
 
@@ -60,7 +74,7 @@ class Scanner(object):
 
             moveto((pos.x, pos.y))
             sleep(0.08)
-            cursor = imagesearcharea(self.CURSOR_IMAGE, x1, y1, x2, y2, precision=self.CURSOR_PRECISION, save=True, name=str(time()))
+            cursor = imagesearcharea(self.CURSOR_IMAGE, x1, y1, x2, y2, precision=self.CURSOR_PRECISION)
             if cursor[0] != -1:
                 return True
 
@@ -78,7 +92,7 @@ class Scanner(object):
             x2 = pos.x + DROP_BOX_SIZE[0]
             y2 = pos.y + DROP_BOX_SIZE[1]
 
-            drop_pos = imagesearcharea(image_path, pos.x, pos.y, x2, y2, precision=0.7, save=True, name=str(time()))
+            drop_pos = imagesearcharea(image_path, pos.x, pos.y, x2, y2, precision=0.7)
             if drop_pos[0] != -1:
                 has_drop[i] = True
 
