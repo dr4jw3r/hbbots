@@ -50,7 +50,7 @@ class OCR(object):
 
         return Image.fromarray(data)
 
-    def getlocation(self):    
+    def getlocation(self):
         screenshot = region_grabber((228, 571, 396, 595))
         screenshot = ImageOps.invert(screenshot)
         # screenshot.save("./locations/" + str(time()) + ".png")
@@ -59,6 +59,7 @@ class OCR(object):
             res = pytesseract.image_to_string(screenshot)
 
             if res.find('%') is not -1:
+                # screenshot.save("./locations/" + "percentage_" + str(time()) + ".png")
                 return None
 
             split = res.split("(")
@@ -69,6 +70,7 @@ class OCR(object):
 
             return (loc, coords)
         except IndexError:
+            # screenshot.save("./locations/" + "indexerror_" + str(time()) + ".png")
             return None
 
     def readchat(self, query):
@@ -138,14 +140,11 @@ class OCR(object):
         return True        
 
     def checkbreak(self):
-        sleep(0.1)
         img = region_grabber((10, 500, 290, 540))
         img = self._process_image(img, self.COLOR_LOG)
         res = pytesseract.image_to_string(img).lower()
+        keywords = ["hoe", "exh"]
 
-        print(res)
-        
-        keywords = ["item", "exhausted"]
         for kw in keywords:
             if res.find(kw) == -1:
                 return False

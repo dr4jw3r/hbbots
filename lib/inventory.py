@@ -1,4 +1,4 @@
-from copy import deepcopy
+from time import sleep
 from lib.imagesearch import imagesearch_numLoop, imagesearcharea, region_grabber
 from lib.inputcontrol import keypress
 
@@ -25,15 +25,17 @@ def _addoffset(pos, offset):
     return (pos[0] + offset[0], pos[1] + offset[1])
 
 def _findcorner():
-    openinventory()
-    text_pos = imagesearch_numLoop(INVENTORY_IMAGE, 0.1, 5)
+    text_pos = [-1, -1]
+    while text_pos[0] == -1:
+        openinventory()
+        text_pos = imagesearch_numLoop(INVENTORY_IMAGE, 0.1, 5)
     
-    if text_pos[0] is not -1:
-        return _addoffset(text_pos, CORNER_OFFSET)
-
-    return None
+        if text_pos[0] is not -1:
+            return _addoffset(text_pos, CORNER_OFFSET)
 
 def getbounds():
+    openinventory()
+    sleep(0.01)
     corner = _findcorner()
     corner2 = (corner[0] + INVENTORY_WINDOW_SIZE[0], corner[1] + INVENTORY_WINDOW_SIZE[1])
     return (corner, corner2)
@@ -96,7 +98,7 @@ def inventorypositions():
     return positions
 
 def openinventory():
-    pos = imagesearch_numLoop(INVENTORY_IMAGE, 0.1, 5)
+    pos = imagesearch_numLoop(INVENTORY_IMAGE, 0.1, 1)
     
     if pos[0] is not -1:
         return
@@ -104,7 +106,7 @@ def openinventory():
         keypress("f6")
 
 def closeinventory():
-    pos = imagesearch_numLoop(INVENTORY_IMAGE, 0.1, 5)
+    pos = imagesearch_numLoop(INVENTORY_IMAGE, 0.1, 1)
     
     if pos[0] is not -1:
         keypress("f6")

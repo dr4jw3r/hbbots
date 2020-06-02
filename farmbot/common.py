@@ -5,9 +5,9 @@ from lib.imagesearch import imagesearch_numLoop, imagesearcharea
 from lib.inputcontrol import moveto, click, clickright, keypress, keydown, keyup, leftdown, leftup, rightdown, rightup, position
 from lib.inventory import openinventory, closeinventory, hoepositions, defaultposition, getbounds
 from lib.ocr import OCR
+from farmbot.positions import FARM_WPTS
+from pyautogui import screenshot
 
-FARM_WPTS = [(95, 99)]
-SELF_POSITION = (400, 280)
 PLANTING_POSITIONS = [
     (397, 337),
     (368, 335),
@@ -61,135 +61,6 @@ def _teststage(pos, planting_pos):
 
 def _stopharvest():
     rightup()
-    keyup("ctrlleft")
-
-def harvest(cancellation_token, crop_type):
-    for i in range(3):
-        if cancellation_token.is_cancelled:
-            _stopharvest()
-            return
-        
-        test_time = 0
-        test_pos = TEST_BOXES[i]
-        planting_pos = PLANTING_POSITIONS[i]
-        return_positions = RETURN_POSITIONS[i]
-        drop_position = DROP_CHECK_POSITIONS[i]
-
-        start_time = time()
-        
-        crop_stage = 0
-        moveto(planting_pos)
-        sleep(0.1)
-
-        while not crop_stage == -1:
-            if cancellation_token.is_cancelled:
-                _stopharvest()
-                return
-
-            keydown("ctrlleft")
-            rightdown()
-
-            sleep(1)
-
-            if cancellation_token.is_cancelled:
-                _stopharvest()
-                return
-
-            # every x seconds test for last stage of plant
-            if time() - start_time >= test_time:
-                rightup()
-                keyup("ctrlleft")
-                crop_stage = _teststage(test_pos, planting_pos)
-
-                if crop_stage == 3:
-                    test_time = 1.5
-                elif crop_stage == 2:
-                    test_time = 5
-                elif crop_stage == 1:
-                    test_time = 15
-
-                start_time = time()
-
-            else:
-                # check for break of hoe
-                if checkhoebreak():
-                    _stopharvest()
-                    return
-
-        if cancellation_token.is_cancelled:
-            _stopharvest()
-            return        
-
-        if isdrop(drop_position, planting_pos, crop_type):
-            moveto(planting_pos)
-            sleep(0.1)
-            click()
-            sleep(0.2)
-            moveto(SELF_POSITION)
-            sleep(0.1)
-            clickright()
-            sleep(0.05)
-        
-            for rp in return_positions:
-                moveto(rp)
-                sleep(0.1)
-                click()
-
-            sleep(0.05)
-            click()
-
-        if cancellation_token.is_cancelled:
-            _stopharvest()
-            return
-
-    moveto(SELF_POSITION)
-    sleep(0.1)
-    clickright()
-    sleep(0.1)
-
-def checkhoebreak():
-    return OCR.checkbreak()    
-
-def isdrop(position, cursor_position, produce):
-    moveto((0, 0))
-    sleep(0.1)
-    image = "./common/samples/produce/" + produce + ".png"
-    drop_position = imagesearcharea(image, position[0], position[1], position[0] + DROP_BOX_SIZE[0], position[1] + DROP_BOX_SIZE[1], precision=0.55)
-    moveto(cursor_position)
-    if drop_position[0] is not -1:
-        return True
-    else:
-        return False
-
-def plantseeds(cancellation_token):
-    has_planted = False
-    openinventory()    
-    b = getbounds()    
-
-    for pos in PLANTING_POSITIONS:
-        if cancellation_token.is_cancelled:
-            break
-
-        sleep(0.08)
-        seed_bag_pos = imagesearcharea("./common/samples/inventory/seed_bag.png", b[0][0], b[0][1], b[1][0], b[1][1], 0.7)
-
-        if seed_bag_pos[0] == -1:
-            continue
-
-        seed_bag_pos = (seed_bag_pos[0] + b[0][0], seed_bag_pos[1] + b[0][1])
-
-        moveto(seed_bag_pos, 5, 5)
-        sleep(0.1)
-        click(2)
-        sleep(0.1)
-        moveto(pos)
-        sleep(0.1)
-        click()
-        has_planted = True
-
-    closeinventory()
-    sleep(0.05)
-    return has_planted
 
 def equiphoe(hoe_index):
     openinventory()
@@ -207,7 +78,6 @@ def equiphoe(hoe_index):
 
         is_exhausted = OCR.checkexhausted()
 
-    closeinventory()
     # return whether hoe equipped
     return not is_exhausted
 
@@ -217,6 +87,7 @@ def gotofarm_fromrecall(cancellation_token):
 def buyseeds(seeds, amount=24, cancellation_token=None):
     clicknpc("shopkeeper", cancellation_token)
     clickbutton("buy_misc_shop", cancellation_token)
+    scrolldown()
     clickbutton("seed_bag_" + seeds, cancellation_token)
     
     amount_str = str(amount)
@@ -234,21 +105,62 @@ def buyseeds(seeds, amount=24, cancellation_token=None):
     clickbutton("purchase", cancellation_token, 5, 5)
     clickright()
 
-def sellproduce(produce, cancellation_token):
-    produce_pos = (0, 0)
-    while produce_pos[0] != -1:
-        openinventory()
-        sleep(0.05)
-        produce_pos = imagesearch_numLoop("./common/samples/inventory/" + produce + ".png", 0.1, 5, precision=0.7)
-        closeinventory()
+def scrolldown():
+    sleep(0.1)
+    pos = imagesearch_numLoop("./common/samples/buttons/scroll.png", 0.1, 5)
+    moveto(pos, 5, 5)
+    sleep(0.1)
+    leftdown()
+    sleep(0.1)
+    moveto((pos[0], pos[1] + 80))
+    sleep(0.1)
+    leftup()
+    sleep(0.1)
 
-        if produce_pos[0] == -1:
-            break
+def sellproduce(produce, sell_mode, cancellation_token):
+    # Open Inventory and take a screenshot!
+    openinventory()
+    sleep(0.05)
+    screenshot().save("./sales/{0}.png".format(time()))
+    closeinventory()
+    sleep(0.05)
 
+    if sell_mode == "click":
+        produce_pos = (0, 0)
+        while produce_pos[0] != -1:
+            if cancellation_token.is_cancelled:
+                break
+
+            openinventory()
+            sleep(0.05)
+            produce_pos = imagesearch_numLoop("./common/samples/inventory/" + produce + ".png", 0.1, 5, precision=0.65)
+            closeinventory()
+
+            if produce_pos[0] == -1:
+                break
+
+            clicknpc("shopkeeper", cancellation_token)
+            clickbutton("sell_items_store", cancellation_token)
+            moveto(produce_pos, 18)
+            click(18, 0.02)
+
+            # If any items to be sold - click button
+            sell_button_pos = imagesearch_numLoop("./common/samples/buttons/sell_items_btn.png", 0.1, 10)
+            moveto(sell_button_pos, 10)
+            sleep(0.1)
+            click()
+            sleep(1)
+
+    elif sell_mode == "enter":
         clicknpc("shopkeeper", cancellation_token)
         clickbutton("sell_items_store", cancellation_token)
-        moveto(produce_pos, 5)
-        click(18, 0.02)
+
+        produce_pos = imagesearch_numLoop("./common/samples/inventory/" + produce + ".png", 0.1, 5)
+        moveto(produce_pos, 10)
+        sleep(0.1)
+        click(2)
+        sleep(0.1)
+        keypress("enter")
 
         # If any items to be sold - click button
         sell_button_pos = imagesearch_numLoop("./common/samples/buttons/sell_items_btn.png", 0.1, 10)
@@ -285,12 +197,4 @@ def moveseeds(cancellation_token):
     keyup("shiftleft")
 
 def verifylocation(cancellation_token):
-    loc = OCR.getlocation()
-
-    print(loc)
-
-    if loc is not None:
-        c = loc[1]
-
-        if c[0] != FARM_WPTS[0] or c[1] != FARM_WPTS[1]:
-            gotofarm_fromrecall(cancellation_token)
+    gotofarm_fromrecall(cancellation_token)

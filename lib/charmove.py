@@ -10,7 +10,7 @@ def isclose(direction):
     xclose = False
     yclose = False
 
-    DISTANCE_THR = 2
+    DISTANCE_THR = 3
 
     if abs(direction[0]) <= DISTANCE_THR:
         xclose = True

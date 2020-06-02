@@ -70,9 +70,28 @@ def imagesearcharea(image, x1,y1,x2,y2, precision=0.8, im=None, save=False, name
     
     min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)    
 
+    if save:
+        im.save("./precisionsamples/" + str(max_val) + "_" + name + ".png")
+
     if max_val < precision:
         return [-1, -1]
     return max_loc
+
+def imagesearcharea2(template, precision=0.8, im=None, save=False, name=None) :
+    if save:
+        im.save('./tests/testarea' + name + '.png') # usefull for debugging purposes, this will save the captured region as "testarea.png"
+
+    img_rgb = np.array(im)
+    img_gray = cv2.cvtColor(img_rgb, cv2.COLOR_BGR2GRAY)
+    # template = cv2.imread(image, 0)
+
+    res = cv2.matchTemplate(img_gray, template, cv2.TM_CCOEFF_NORMED)
+    
+    min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)    
+
+    if max_val < precision:
+        return ([-1, -1], max_val, im)
+    return (max_loc, max_val, im)
 
 '''
 
