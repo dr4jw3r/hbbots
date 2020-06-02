@@ -5,10 +5,9 @@ from lib.imagesearch import imagesearch_numLoop, imagesearcharea
 from lib.inputcontrol import moveto, click, clickright, keypress, keydown, keyup, leftdown, leftup, rightdown, rightup, position
 from lib.inventory import openinventory, closeinventory, hoepositions, defaultposition, getbounds
 from lib.ocr import OCR
+from farmbot.positions import FARM_WPTS
 from pyautogui import screenshot
 
-FARM_WPTS = [(101, 106)]
-SELF_POSITION = (400, 280)
 PLANTING_POSITIONS = [
     (397, 337),
     (368, 335),
@@ -134,7 +133,7 @@ def sellproduce(produce, sell_mode, cancellation_token):
 
             openinventory()
             sleep(0.05)
-            produce_pos = imagesearch_numLoop("./common/samples/inventory/" + produce + ".png", 0.1, 5, precision=0.8)
+            produce_pos = imagesearch_numLoop("./common/samples/inventory/" + produce + ".png", 0.1, 5, precision=0.65)
             closeinventory()
 
             if produce_pos[0] == -1:
@@ -142,7 +141,7 @@ def sellproduce(produce, sell_mode, cancellation_token):
 
             clicknpc("shopkeeper", cancellation_token)
             clickbutton("sell_items_store", cancellation_token)
-            moveto(produce_pos, 5)
+            moveto(produce_pos, 18)
             click(18, 0.02)
 
             # If any items to be sold - click button

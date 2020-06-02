@@ -23,12 +23,9 @@ class LocationMonitor(object):
     def run(self):
         while not self.cancellation_token.is_cancelled:
             location = self.ocr.getlocation()
-
             if location is not None:
                 self.location = location[0]
                 self.coordinates = location[1]
-
-            sleep(1)
 
     def stop(self):
         self.cancellation_token.cancel()

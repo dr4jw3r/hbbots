@@ -7,7 +7,9 @@ from lib.CancellationToken import CancellationToken
 ###########
 from farmbot.common import *
 from lib.common import *
+from lib.LocationMonitor import LocationMonitor
 from levelbot.levelbot_common import equipweapon
+from farmbot.positions import FARM_WPTS
 from farmbot.harvester import Harvester
 from farmbot.planter import Planter
 from farmbot.scanner import Scanner
@@ -21,9 +23,11 @@ class FarmThread(object):
         self.start_at_farm = start_at_farm
         self.crop_type = crop_type
         self.sell_mode = sell_mode
-        self.num_seed_bags = 39
+        self.num_seed_bags = 36
+        self.num_hoes = 4
         self.cancellation_token = CancellationToken()
 
+        self.location_monitor = LocationMonitor()
         self.harvester = Harvester()
         self.planter = Planter()
         self.scanner = Scanner()
@@ -39,7 +43,10 @@ class FarmThread(object):
             hoe_equipped = equiphoe(index)
 
             if not hoe_equipped:
-                index += 1
+                if index + 1 == self.num_hoes:
+                    index = 0
+                else:
+                    index += 1
 
         return index
 
@@ -139,7 +146,7 @@ class FarmThread(object):
             print("Equip hoe")
             hoe_index = self.hoe(hoe_index)
             s_t = time()
-            while True:               
+            while True:              
                 if time() - timeout_timer >= 900:
                     print("Broke out with timeout")
                     break
@@ -163,6 +170,11 @@ class FarmThread(object):
 
                     if any(replant):
                         self.harvester.stopharvest()
+
+                        coords = self.location_monitor.getcoordinates()
+                        if coords[0] != FARM_WPTS[-1][0] or coords[1] != FARM_WPTS[-1][1]:
+                            verifylocation(self.cancellation_token)
+
                         self.planter.replant(replant)
                     
                     scan_time = time()
@@ -182,32 +194,41 @@ class FarmThread(object):
                         equipweapon()
                         kt = KillAroundThread(singlescan=True, no_loot=True)
                         kt.join()
+                        print("Enemy scan finished 1")
 
-                        self.hoe(hoe_index)
+                        hoe_index = self.hoe(hoe_index)
+                        print("Enemy scan finished 2")
 
                     enemy_time = time()
 
                 # after 5 minutes harvest all
-                if (current_time - finish_time >= 300) or seedbag_condition:
+                # 780 = 13 mins (15 min despawn?)
+                if (current_time - finish_time >= 780) or seedbag_condition:
                     print("Finish timer. Seedbag: ", seedbag_condition)
-                    for i in range(2):
+                    finish_time = time()
+                    for i in range(4):
                         replant = self.scanner.scan()
                         for i in range(len(replant)):
                             if not replant[i]:
                                 self.harvester.harvestsingle(i, hoe_thread, hoe_index, self.cancellation_token)
                         
                         sleep(0.1)
-
                     
                     # check for drops here (organised left to right)
-                    self.drop_handler.pickup(self.crop_type)
+                    self.drop_handler.pickup(self.crop_type, self.cancellation_token)
                     self.harvester.stopharvest()
                     
                     if not seedbag_condition:
-                        verifylocation(self.cancellation_token)
-                        
-                    finish_time = time()
-                    hoe_index += 1
+                        has_enemy = self.scanner.scanenemy(self.cancellation_token)
+                        if has_enemy:
+                            self.harvester.stopharvest()
+                            equipweapon()
+                            kt = KillAroundThread(singlescan=True, no_loot=True)
+                            kt.join()
+                            print("Enemy scan finished 21")
+
+                            self.hoe(hoe_index)
+                            print("Enemy scan finished 22")                                            
                 
                 self.harvester.stopharvest()
                 if seedbag_condition:

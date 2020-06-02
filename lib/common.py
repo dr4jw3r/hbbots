@@ -1,10 +1,12 @@
 import re
 ###########
-from time import sleep
+from time import sleep, time
 ###########
 from lib.ocr import OCR
+from lib.LocationMonitor import LocationMonitor
 from lib.imagesearch import imagesearch_numLoop, imagesearch, imagesearcharea
-from lib.inputcontrol import keydown, keyup, keypress, moveto, click, clickright, leftdown as mouseleftdown, leftup as mouseleftup
+from lib.inputcontrol import keydown, keyup, keypress, moveto, click, clickright
+from lib.inputcontrol import leftdown as mouseleftdown, leftup as mouseleftup, rightdown as mouserightdown, rightup as mouserightup
 from lib.inventory import openinventory, closeinventory, defaultposition, inventorypositions, wandposition
 from lib.charmove import *
 ###########
@@ -12,6 +14,7 @@ from lib.threads.castspell import CastSpellThread
 
 # CONSTANTS #
 OCR = OCR()
+LocationMonitor = LocationMonitor()
 SELF_POSITION = (400, 280)
 
 # CHECKS #
@@ -299,11 +302,10 @@ def createfood(cancellation_token):
 # MOVEMENT #
 def followwpts(cancellation_token, wpts, locationstop=None, tolerance=2):
     for point in wpts:
-
         if point == wpts[-1]:
-            delay = 0.5
+            delay = 1
         else:
-            delay = 0.02
+            delay = 0
 
         onpoint = False
 
@@ -314,26 +316,33 @@ def followwpts(cancellation_token, wpts, locationstop=None, tolerance=2):
 
             (onpoint, direction) = runto(direction, point, delay, locationstop, tolerance)
 
-def runto(direction, coords, delay=0.02, locationstop=None, tolerance=2):
-    sleep(delay)
-    current_loc = OCR.getlocation()
+def runto(direction, coords, delay=0, locationstop=None, tolerance=2):
+    sleep(delay)    
+
+    current_loc = LocationMonitor.getlocation()
+    current_coords = LocationMonitor.getcoordinates()
 
     if locationstop is not None and current_loc is not None:
-        if current_loc[0].find(locationstop) != -1:
-            clickright()
-            return (True, [0, 0])
+        if current_loc.find(locationstop) != -1:
+            mouserightdown()
+            sleep(0.5)
+            mouserightup()
 
-    if current_loc is not None:
-        current = current_loc[1]
-        currentX = re.sub('[^0-9]', '', str(current[0]))
-        currentY = re.sub('[^0-9]', '', str(current[1]))
-        direction[0] = int(currentX) - coords[0]
-        direction[1] = int(currentY) - coords[1]
+            return (True, [0, 0])   
+
+    if current_coords is not None:        
+        direction[0] = int(current_coords[0]) - coords[0]
+        direction[1] = int(current_coords[1]) - coords[1]
     else:
         direction[0] = 1
         direction[1] = 1
 
-    if direction[0] > 0 and direction[1] > 0:
+    if (direction[0] <= tolerance and direction[0] >= -tolerance) and (direction[1] <= tolerance and direction[1] >= -tolerance):
+        mouserightdown()
+        sleep(0.5)
+        mouserightup()
+        return (True, direction)
+    elif direction[0] > 0 and direction[1] > 0:
         leftup(direction)
     elif direction[0] == 0 and direction[1] > 0:
         up(direction)
@@ -348,11 +357,18 @@ def runto(direction, coords, delay=0.02, locationstop=None, tolerance=2):
     elif direction[0] > 0 and direction[1] < 0:
         leftdown(direction)
     elif direction[0] > 0 and direction[1] == 0:
-        left(direction)
-    # elif direction[0] == 0 and direction[1] == 0:
-    elif (direction[0] <= tolerance and direction[0] >= -tolerance) and (direction[1] <= tolerance and direction[1] >= -tolerance):
-        clickright()
-        return (True, direction)
+        left(direction)    
+
+    current_loc = LocationMonitor.getlocation()
+    current_coords = LocationMonitor.getcoordinates()
+
+    if locationstop is not None and current_loc is not None:
+        if current_loc.find(locationstop) != -1:
+            mouserightdown()
+            sleep(0.5)
+            mouserightup()
+
+            return (True, [0, 0])        
 
     return (False, direction)
 
@@ -360,8 +376,8 @@ def gotoblacksmith_fromrecall(cancellation_token):
     has_blacksmith = False
     BS_WPTS = [
         [58, 101],
-        [63, 96],
-        [63, 80]
+        [65, 96],
+        [64, 91]
     ]
 
     while not has_blacksmith:

@@ -72,8 +72,6 @@ def imagesearcharea(image, x1,y1,x2,y2, precision=0.8, im=None, save=False, name
 
     if save:
         im.save("./precisionsamples/" + str(max_val) + "_" + name + ".png")
-        with open("precision_test.txt", "a") as f:
-            f.write(str(max_val) + "\n")
 
     if max_val < precision:
         return [-1, -1]
