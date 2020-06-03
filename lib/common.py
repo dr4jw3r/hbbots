@@ -301,7 +301,9 @@ def createfood(cancellation_token):
 
 # MOVEMENT #
 def followwpts(cancellation_token, wpts, locationstop=None, tolerance=2):
-    for point in wpts:
+    TIMEOUT = 60
+    for i in range(len(wpts)):
+        point = wpts[i]
         if point == wpts[-1]:
             delay = 1
         else:
@@ -310,7 +312,14 @@ def followwpts(cancellation_token, wpts, locationstop=None, tolerance=2):
         onpoint = False
 
         direction = [-1, -1]
+        timeout_timer = time()
         while not onpoint:
+            if time() - timeout_timer >= TIMEOUT:
+                i = 0
+                equipstaff()
+                sleep(0.1)
+                recall(cancellation_token)
+
             if cancellation_token.is_cancelled:
                 break
 
@@ -376,7 +385,7 @@ def gotoblacksmith_fromrecall(cancellation_token):
     has_blacksmith = False
     BS_WPTS = [
         [58, 101],
-        [65, 96],
+        [64, 96],
         [64, 91]
     ]
 
@@ -392,6 +401,7 @@ def gotoblacksmith_fromrecall(cancellation_token):
 def gotoshop_fromrecall(cancellation_token):
     has_shopkeeper = False
     SHOP_WPTS = [
+        (47, 89),
         (61, 72),
         (61, 50)
     ]

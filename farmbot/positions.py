@@ -6,6 +6,7 @@ class Position(object):
 
 SELF_POSITION = (400, 280)
 FARM_WPTS = [(101, 106)]
+# FARM_WPTS = [(95, 110)]
 PLANTING_POSITIONS = [
     Position(397, 337, "center"),
     Position(368, 335, "left"),

@@ -48,7 +48,7 @@ class Harvester(object):
             
             moveto((400, 600))
             sleep(0.05)
-            crop_stage = self.scanner.getcropstage(TEST_BOX_POSITIONS[index])
+            crop_stage = self.scanner.getcropstageold(TEST_BOX_POSITIONS[index])
 
             if time() - start_time >= timeout:
                 print("TIMED OUT")

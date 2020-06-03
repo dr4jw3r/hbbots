@@ -6,13 +6,14 @@ from farmbot.positions import SELF_POSITION
 class DropHandler(object):
     def __init__(self):
         self.GRABREGION = (319, 222, 481, 383)
+        self.DROP_PRECISION = 0.94
 
     def _getdrop(self, pos, cancellation_token):
         if cancellation_token.is_cancelled:
             return
 
         moveto(pos)
-        sleep(0.05)
+        sleep(0.3)
         click()
 
         if cancellation_token.is_cancelled:
@@ -42,7 +43,7 @@ class DropHandler(object):
 
             moveto((400, 600))
             sleep(0.05)
-            pos = imagesearcharea(crop_image, self.GRABREGION[0], self.GRABREGION[1], self.GRABREGION[2], self.GRABREGION[3], precision=0.95)
+            pos = imagesearcharea(crop_image, self.GRABREGION[0], self.GRABREGION[1], self.GRABREGION[2], self.GRABREGION[3], precision=self.DROP_PRECISION)
             
             if pos[0] == -1:
                 break

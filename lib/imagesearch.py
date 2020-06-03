@@ -70,9 +70,6 @@ def imagesearcharea(image, x1,y1,x2,y2, precision=0.8, im=None, save=False, name
     
     min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)    
 
-    if save:
-        im.save("./precisionsamples/" + str(max_val) + "_" + name + ".png")
-
     if max_val < precision:
         return [-1, -1]
     return max_loc

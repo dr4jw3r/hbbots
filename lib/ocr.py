@@ -51,8 +51,11 @@ class OCR(object):
         return Image.fromarray(data)
 
     def getlocation(self):
-        screenshot = region_grabber((228, 571, 396, 595))
-        screenshot = ImageOps.invert(screenshot)
+        try:
+            screenshot = region_grabber((228, 571, 396, 595))
+            screenshot = ImageOps.invert(screenshot)
+        except OSError:
+            return None
         # screenshot.save("./locations/" + str(time()) + ".png")
 
         try:

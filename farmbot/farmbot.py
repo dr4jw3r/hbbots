@@ -32,10 +32,21 @@ class FarmThread(object):
         self.planter = Planter()
         self.scanner = Scanner()
         self.drop_handler = DropHandler()
+        self.hoe_thread = HoeThread()
 
         thread = Thread(target=self.run, args=())
         thread.daemon = True
         thread.start()
+
+    def enemyscan(self):
+        has_enemy = self.scanner.scanenemy(self.cancellation_token)
+        if has_enemy:
+            equipweapon()
+            kt = KillAroundThread(singlescan=True, no_loot=True)
+            kt.join()
+            sleep(0.05)
+
+        return has_enemy
 
     def hoe(self, index):
         hoe_equipped = False
@@ -141,8 +152,6 @@ class FarmThread(object):
             finish_time = time()
             seedbag_condition = False
 
-            hoe_thread = HoeThread()
-
             print("Equip hoe")
             hoe_index = self.hoe(hoe_index)
             s_t = time()
@@ -180,24 +189,15 @@ class FarmThread(object):
                     scan_time = time()
 
                 # to thread
-                if hoe_thread.ishoebroken():
+                if self.hoe_thread.ishoebroken():
                     print("Hoe broke")
                     self.harvester.stopharvest()
                     hoe_index = self.hoe(hoe_index)
-                    hoe_thread.acknowledge()
+                    self.hoe_thread.acknowledge()
 
                 if current_time - enemy_time >= 10:
-                    print("Enemy scan")
-                    has_enemy = self.scanner.scanenemy(self.cancellation_token)
-                    if has_enemy:
-                        self.harvester.stopharvest()
-                        equipweapon()
-                        kt = KillAroundThread(singlescan=True, no_loot=True)
-                        kt.join()
-                        print("Enemy scan finished 1")
-
+                    if self.enemyscan():
                         hoe_index = self.hoe(hoe_index)
-                        print("Enemy scan finished 2")
 
                     enemy_time = time()
 
@@ -210,7 +210,7 @@ class FarmThread(object):
                         replant = self.scanner.scan()
                         for i in range(len(replant)):
                             if not replant[i]:
-                                self.harvester.harvestsingle(i, hoe_thread, hoe_index, self.cancellation_token)
+                                self.harvester.harvestsingle(i, self.hoe_thread, hoe_index, self.cancellation_token)
                         
                         sleep(0.1)
                     
@@ -219,30 +219,18 @@ class FarmThread(object):
                     self.harvester.stopharvest()
                     
                     if not seedbag_condition:
-                        has_enemy = self.scanner.scanenemy(self.cancellation_token)
-                        if has_enemy:
-                            self.harvester.stopharvest()
-                            equipweapon()
-                            kt = KillAroundThread(singlescan=True, no_loot=True)
-                            kt.join()
-                            print("Enemy scan finished 21")
-
-                            self.hoe(hoe_index)
-                            print("Enemy scan finished 22")                                            
+                        if self.enemyscan():
+                            hoe_index = self.hoe(hoe_index)
                 
-                self.harvester.stopharvest()
                 if seedbag_condition:
                     break
 
             self.harvester.stopharvest()
             print("Elapsed time: ", time() - s_t)
-            hoe_thread.stop()
-            has_enemy = self.scanner.scanenemy(self.cancellation_token)
-            if has_enemy:
-                equipweapon()
-                kt = KillAroundThread(singlescan=True, no_loot=True)
-                kt.join()
-                sleep(0.05)
+            self.hoe_thread.stop()
+            self.enemyscan()
                 
     def stop(self):
         self.cancellation_token.cancel()
+        self.hoe_thread.stop()
+        self.location_monitor.stop()
