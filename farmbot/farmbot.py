@@ -41,10 +41,9 @@ class FarmThread(object):
     def enemyscan(self):
         has_enemy = self.scanner.scanenemy(self.cancellation_token)
         if has_enemy:
-            equipweapon()
             kt = KillAroundThread(singlescan=True, no_loot=True)
             kt.join()
-            sleep(0.05)
+            sleep(0.1)
 
         return has_enemy
 
@@ -62,12 +61,13 @@ class FarmThread(object):
         return index
 
     def run(self):
-        sleep(1)
+        sleep(1)        
 
         while not self.cancellation_token.is_cancelled:
             if not self.start_at_farm:
                 if self.cancellation_token.is_cancelled:
                     break
+
                 print("Equip staff")
                 equipstaff()
 
@@ -88,6 +88,12 @@ class FarmThread(object):
 
                 print("Repair gear")
                 repairgear(self.cancellation_token)
+
+                if self.cancellation_token.is_cancelled:
+                    break
+
+                print("Selling")
+                sellitems(self.cancellation_token)
 
                 if self.cancellation_token.is_cancelled:
                     break
@@ -146,11 +152,13 @@ class FarmThread(object):
 
             verifylocation(self.cancellation_token)
             
+            hoe_timer = time()
             timeout_timer = time()
             scan_time = time()
             enemy_time = time()
             finish_time = time()
             seedbag_condition = False
+            moved_produce = False
 
             print("Equip hoe")
             hoe_index = self.hoe(hoe_index)
@@ -188,17 +196,17 @@ class FarmThread(object):
                     
                     scan_time = time()
 
-                # to thread
-                if self.hoe_thread.ishoebroken():
+                # broken somehow
+                if self.hoe_thread.ishoebroken() or time() - hoe_timer >= 30:
                     print("Hoe broke")
                     self.harvester.stopharvest()
                     hoe_index = self.hoe(hoe_index)
                     self.hoe_thread.acknowledge()
+                    hoe_timer = time()                                        
 
-                if current_time - enemy_time >= 10:
+                if current_time - enemy_time >= 10:                    
                     if self.enemyscan():
                         hoe_index = self.hoe(hoe_index)
-
                     enemy_time = time()
 
                 # after 5 minutes harvest all
@@ -215,8 +223,9 @@ class FarmThread(object):
                         sleep(0.1)
                     
                     # check for drops here (organised left to right)
-                    self.drop_handler.pickup(self.crop_type, self.cancellation_token)
                     self.harvester.stopharvest()
+                    self.drop_handler.pickup(self.crop_type, self.cancellation_token)                    
+                    moveproduce(self.crop_type)
                     
                     if not seedbag_condition:
                         if self.enemyscan():

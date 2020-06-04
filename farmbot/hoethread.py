@@ -1,5 +1,5 @@
 from threading import Thread
-from time import sleep
+from time import sleep, time
 from lib.ocr import OCR
 from lib.CancellationToken import CancellationToken
 
@@ -18,12 +18,9 @@ class HoeThread(object):
         
         while not self.cancellation_token.is_cancelled:
             broken = self.OCR.checkbreak()
-
             if broken:
                 self.hoe_break = True
                 sleep(5)
-
-            sleep(0.5)
 
     def ishoebroken(self):
         return self.hoe_break

@@ -143,13 +143,17 @@ class OCR(object):
         return True        
 
     def checkbreak(self):
-        img = region_grabber((10, 500, 290, 540))
+        img = region_grabber((10, 475, 290, 545))
         img = self._process_image(img, self.COLOR_LOG)
         res = pytesseract.image_to_string(img).lower()
         keywords = ["hoe", "exh"]
+
+        with open("hoe.txt", "a") as f:
+            f.write(res)
 
         for kw in keywords:
             if res.find(kw) == -1:
                 return False
 
+        print(res)
         return True      

@@ -80,17 +80,17 @@ class Scanner(object):
             (crop_pos, max_val, sample) = imagesearcharea2(template, im=img, precision=self.CROP_STAGE_PRECISION[box_position])
 
             if crop_pos[0] != -1:
-                sample.save("./ps/falsepos/{0}_{1}.png".format(max_val, time()))
+                # sample.save("./ps/falsepos/{0}_{1}.png".format(max_val, time()))
                 return i
 
             template = self.CROP_IMAGES["crop_{0}_{1}_glow.png".format(i, box_position)]
             (crop_pos, max_val, sample) = imagesearcharea2(template, im=img, precision=self.CROP_STAGE_PRECISION[box_position])
 
             if crop_pos[0] != -1:
-                sample.save("./ps/falsepos/{0}_{1}.png".format(max_val, time()))
+                # sample.save("./ps/falsepos/{0}_{1}.png".format(max_val, time()))
                 return i
 
-        sample.save("./ps/falseneg/{0}_{1}.png".format(max_val, time()))
+        # sample.save("./ps/falseneg/{0}_{1}.png".format(max_val, time()))
         # img.save("./ps/img_{0}_{1}.png".format(max_val, time()))
         return -1
 

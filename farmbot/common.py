@@ -179,6 +179,30 @@ def sellproduce(produce, sell_mode, cancellation_token):
 
     closeinventory()
 
+def moveproduce(crop_type):
+    b = getbounds()
+    sleep(0.1)
+    produce_pos = imagesearcharea("./common/samples/inventory/" + crop_type + ".png", b[0][0], b[0][1], b[1][0], b[1][1], precision=0.6)
+
+    if produce_pos[0] != -1:
+        produce_pos = (produce_pos[0] + b[0][0], produce_pos[1] + b[0][1])
+        moveto(produce_pos, 18)
+        sleep(0.1)
+        keydown("shiftleft")
+        sleep(0.1)
+        leftdown()
+        sleep(0.1)
+        default_position = defaultposition()
+        default_position = (default_position[0] + 50, default_position[1])
+        moveto(default_position)
+        sleep(0.1)
+        leftup()
+        sleep(0.1)
+        keyup("shiftleft")
+        return True
+
+    return False
+
 def moveseeds(cancellation_token):
     openinventory()
     seed_bag_pos = imagesearch_numLoop("./common/samples/inventory/seed_bag.png", 0.1, 5)

@@ -82,12 +82,12 @@ def weaponsposition():
     return _addoffset(_findcorner(), WEAPONS_OFFSET)
 
 def inventorypositions():
+    positions = []
     start_offset = (int(DISENCHANT_STEPS / 2) * DISENCHANT_OFFSET)
 
     start = defaultposition()
+    positions.append(start)
     start = (start[0] - start_offset, start[1] - start_offset)
-
-    positions = []
 
     for y in range(DISENCHANT_STEPS):
         for x in range(DISENCHANT_STEPS):

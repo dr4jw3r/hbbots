@@ -224,8 +224,8 @@ def sellitems(cancellation_token):
 
             for position in inventorypositions():
                 moveto(position)
-                sleep(0.01)
-                click(2, 0.01)
+                sleep(0.05)
+                click(2, 0.03)
 
             # If any items to be sold - click button
             sell_button_pos = imagesearch_numLoop("./common/samples/buttons/sell_items_btn.png", 0.1, 10)
@@ -319,6 +319,7 @@ def followwpts(cancellation_token, wpts, locationstop=None, tolerance=2):
                 equipstaff()
                 sleep(0.1)
                 recall(cancellation_token)
+                timeout_timer = time()
 
             if cancellation_token.is_cancelled:
                 break
