@@ -148,9 +148,6 @@ class OCR(object):
         res = pytesseract.image_to_string(img).lower()
         keywords = ["hoe", "exh"]
 
-        with open("hoe.txt", "a") as f:
-            f.write(res)
-
         for kw in keywords:
             if res.find(kw) == -1:
                 return False
