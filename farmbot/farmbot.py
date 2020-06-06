@@ -214,7 +214,7 @@ class FarmThread(object):
                 if (current_time - finish_time >= 780) or seedbag_condition:
                     print("Finish timer. Seedbag: ", seedbag_condition)
                     finish_time = time()
-                    for i in range(4):
+                    for i in range(10):
                         replant = self.scanner.scan()
                         for i in range(len(replant)):
                             if not replant[i]:
