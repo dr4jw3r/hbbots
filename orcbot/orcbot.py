@@ -41,7 +41,7 @@ class OrcThread(object):
 
     def findorc(self):
         checkforgold()
-        checkfordrops()
+        # checkfordrops()
 
         self.scanindex += 1
         if self.scanindex % 10 == 0:
