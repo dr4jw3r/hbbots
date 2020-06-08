@@ -23,7 +23,7 @@ class FarmThread(object):
         self.start_at_farm = start_at_farm
         self.crop_type = crop_type
         self.sell_mode = sell_mode
-        self.num_seed_bags = 36
+        self.num_seed_bags = 39
         self.num_hoes = 4
         self.cancellation_token = CancellationToken()
 
@@ -211,7 +211,7 @@ class FarmThread(object):
 
                 # after 5 minutes harvest all
                 # 780 = 13 mins (15 min despawn?)
-                if (current_time - finish_time >= 780) or seedbag_condition:
+                if (current_time - finish_time >= 500) or seedbag_condition:
                     print("Finish timer. Seedbag: ", seedbag_condition)
                     finish_time = time()
                     for i in range(10):

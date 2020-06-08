@@ -7,6 +7,7 @@ LABELS = [
     ("CTRL + SHIFT + L", "Kill Around"),
     ("CTRL + SHIFT + I", "Orc Archery Bot"),
     ("CTRL + SHIFT + U", "Toggle Right Button"),
+    ("CTRL + SHIFT + T", "Toggle Clicker"),
     ("CTRL + SHIFT + Y", "Alchemy Bot"),
     ("CTRL + SHIFT + K", "Levelling Bot"),
     ("CTRL + SHIFT + J", "Levelling Bot - Start at pit"),

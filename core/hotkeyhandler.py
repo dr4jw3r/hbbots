@@ -13,6 +13,7 @@ from lib.threads.alchbot import AlchemyThread
 from lib.threads.equipitem import EquipItemThread
 from lib.threads.fakeamp import FakeAmpThread
 from lib.threads.mpregen import MpRegenThread
+from lib.threads.clicker import ClickerThread
 
 from orcbot.orcbot import OrcThread
 from levelbot.levelbot import LevellingBotThread
@@ -25,6 +26,7 @@ class HotkeyHandler():
         self.farmthread = None
         self.currentthread = None
         self.mpregenbotthread = None
+        self.clickerthread = None
         self.alchemypositions = [None] * 7
         self.currentshield = "lagishield"
 
@@ -45,6 +47,8 @@ class HotkeyHandler():
             self.currentthread = OrcThread()
         elif action == "holdright":
             rightdown()
+        elif action == "clicker":
+            self.currentthread = ClickerThread()
         elif action == "alchemy":
             self.currentthread = AlchemyThread(self.alchemypositions)
         elif action == "mpregenbot":
@@ -98,12 +102,13 @@ class HotkeyHandler():
         hk.register(("control", "shift", "l"), "killaround")
         hk.register(("control", "shift", "i"), "orcbot")
         hk.register(("control", "shift", "u"), "holdright")
+        hk.register(("control", "shift", "t"), "clicker")
         hk.register(("control", "shift", "y"), "alchemy")
         hk.register(("control", "shift", "m"), "mpregenbot")
         hk.register(("control", "shift", "k"), "levellingbot")
         hk.register(("control", "shift", "j"), "levellingbot_pit")
-        hk.register(("control", "alt", "shift", "y"), "adbot")
-        hk.register(("control", "alt", "shift", "t"), "fakeampbot")
+        # hk.register(("control", "alt", "shift", "y"), "adbot")
+        # hk.register(("control", "alt", "shift", "t"), "fakeampbot")
         hk.register(("control", "alt", "shift", "r"), "repbot")
         hk.register(("control", "alt", "shift", "x"), "farmbot")
         hk.register(("control", "alt", "shift", "c"), "farmbot_farm")
