@@ -23,7 +23,7 @@ class FarmThread(object):
         self.start_at_farm = start_at_farm
         self.crop_type = crop_type
         self.sell_mode = sell_mode
-        self.num_seed_bags = 39
+        self.num_seed_bags = 36
         self.num_hoes = 4
         self.cancellation_token = CancellationToken()
 
