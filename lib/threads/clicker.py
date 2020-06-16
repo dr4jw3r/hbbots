@@ -2,7 +2,7 @@
 from threading import Thread
 from time import sleep, time
 from lib.inputcontrol import click
-from lib.CancellationToken import CancellationToken
+from lib.utils.CancellationToken import CancellationToken
 #====
 
 class ClickerThread(object):
