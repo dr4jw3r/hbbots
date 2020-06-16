@@ -229,9 +229,9 @@ class FarmThread(object):
             if not hoe_equipped:
                 self.state.incrementhoeindex()
 
+        self.harvester.startharvest()
         self.hoe_monitor.start(10)
         self.crop_monitor.start()
-        self.harvester.startharvest()
         self.health_monitor.start() 
         self.bag_monitor.start()
         self.cursor_monitor.start()
