@@ -7,7 +7,7 @@ from system_hotkey import SystemHotkey
 from lib.inputcontrol import rightdown, rightup, position
 
 from lib.threads.killaround import KillAroundThread
-from lib.threads.castspell import CastSpellThread
+from lib.threads.CastSpellThread import CastSpellThread
 from lib.threads.adbot import AdThread
 from lib.threads.alchbot import AlchemyThread
 from lib.threads.equipitem import EquipItemThread
@@ -15,10 +15,19 @@ from lib.threads.fakeamp import FakeAmpThread
 from lib.threads.mpregen import MpRegenThread
 from lib.threads.clicker import ClickerThread
 
+#
+from lib.utils.ScreenshotThread import ScreenshotThread
+from lib.ocr import OCR
+from lib.utils.CancellationToken import CancellationToken
+#
+
 from orcbot.orcbot import OrcThread
 from levelbot.levelbot import LevellingBotThread
 from repbot.repbot import RepBotThread
+
 from farmbot.farmbot import FarmThread
+from farmbot.Crop import Crop
+from farmbot.crops import getcrop
 
 class HotkeyHandler():
     def __init__(self):
@@ -30,6 +39,11 @@ class HotkeyHandler():
         self.alchemypositions = [None] * 7
         self.currentshield = "lagishield"
 
+        self.st = None
+        self.ocr_temp = None
+
+        self.crop = getcrop("ginseng")
+
     def handlehotkey(self, event, hotkey, *args):
         winsound.MessageBeep()
         action = args[0][0][0]
@@ -39,10 +53,21 @@ class HotkeyHandler():
             return
 
         if self.currentthread is not None:
+            if self.ocr_temp is not None:
+                self.ocr_temp = None
+            
+            if self.st is not None:
+                self.st.stop()
+                self.st.join()
+                self.st = None
+
             self.currentthread.stop()
             self.currentthread = None
         elif action == "killaround":
-            self.currentthread = KillAroundThread(meat_type="scorpionmeat")
+            self.st = ScreenshotThread(CancellationToken())
+            self.ocr_temp = OCR(self.st)
+
+            self.currentthread = KillAroundThread(self.ocr_temp, meat_type="scorpionmeat")
         elif action == "orcbot":
             self.currentthread = OrcThread()
         elif action == "holdright":
@@ -65,15 +90,15 @@ class HotkeyHandler():
             else:
                 self.repthread.stop()
                 self.repthread = None
-        elif action == "farmbot":
+        elif action == "farmbot":            
             if self.farmthread is None:
-                self.farmthread = FarmThread("ginseng", "click", False)
+                self.farmthread = FarmThread(self.crop, False)
             else:
                 self.farmthread.stop()
                 self.farmthread = None
         elif action == "farmbot_farm":
             if self.farmthread is None:
-                self.farmthread = FarmThread("ginseng", "click", True)
+                self.farmthread = FarmThread(self.crop, True)
             else:
                 self.farmthread.stop()
                 self.farmthread = None

@@ -2,7 +2,7 @@ import re
 import pytesseract
 import numpy as np
 
-from lib.imagesearch import region_grabber
+from lib.imagesearch import imagesearch, region_grabber
 
 from PIL import Image, ImageOps
 from time import sleep, time
@@ -11,7 +11,9 @@ from time import sleep, time
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract'
 
 class OCR(object):
-    def __init__(self):
+    def __init__(self, screenshot_thread):
+        self.screenshot_thread = screenshot_thread
+
         self.COLOR_RED = [255, 130, 130]
         self.COLOR_BLUE = [130, 130, 255]
         self.COLOR_WHITE = [255, 255, 255]
@@ -19,6 +21,17 @@ class OCR(object):
         self.COLOR_LOCATION = [248, 248, 219]
         self.COLOR_GREEN = [0, 255, 0]
         self.COLOR_LOG = [180, 255, 180]
+        self.COLOR_DMG = [
+            [230, 230, 16],
+            [178, 38, 36]
+        ]
+
+    def __haskeywords(self, string, keywords):
+        for kw in keywords:
+            if string.find(kw) == -1:
+                return False
+        
+        return True
 
     def _process_chat_image(self, image):
         image = image.convert("RGB")
@@ -52,24 +65,35 @@ class OCR(object):
 
     def getlocation(self):
         try:
-            screenshot = region_grabber((228, 571, 396, 595))
+            screenshot = self.screenshot_thread.croppedcoordinates(228, 571, 396, 595)
+
+            if screenshot is None:
+                return None
+
             screenshot = ImageOps.invert(screenshot)
         except OSError:
             return None
-        # screenshot.save("./locations/" + str(time()) + ".png")
 
         try:
             res = pytesseract.image_to_string(screenshot)
 
             if res.find('%') is not -1:
-                # screenshot.save("./locations/" + "percentage_" + str(time()) + ".png")
                 return None
+
+            # replace the oddities
+            replacements = [
+                ("@", "0"),
+                ("!", "1"),
+                ("?", "7"),
+            ]
+            for replacement in replacements:
+                res = res.replace(replacement[0], replacement[1])
 
             split = res.split("(")
             loc = split[0].strip()
 
             m = re.findall('\d+', split[1])
-            coords = [int(m[-2]), int(m[-1])]
+            coords = (int(m[-2]), int(m[-1]))
 
             return (loc, coords)
         except IndexError:
@@ -143,7 +167,7 @@ class OCR(object):
         return True        
 
     def checkbreak(self):
-        img = region_grabber((10, 475, 290, 545))
+        img = self.screenshot_thread.croppedcoordinates(10, 475, 290, 545)
         img = self._process_image(img, self.COLOR_LOG)
         res = pytesseract.image_to_string(img).lower()
         keywords = ["hoe", "exh"]
@@ -152,5 +176,17 @@ class OCR(object):
             if res.find(kw) == -1:
                 return False
 
-        print(res)
         return True      
+
+    def processhealth(self):
+        image = self.screenshot_thread.croppedsize(382, 218, 32, 32)
+        image = image.convert("RGB")
+
+        image_data = np.array(image)
+        rgb_data = image_data[:,:,:3]
+        for y in rgb_data:
+            for x in y:
+                if np.all(x == self.COLOR_DMG[0]) or np.all(x == self.COLOR_DMG[1]):
+                    return True
+        
+        return False

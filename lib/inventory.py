@@ -105,6 +105,8 @@ def openinventory():
     else:
         keypress("f6")
 
+    sleep(0.05)
+
 def closeinventory():
     pos = imagesearch_numLoop(INVENTORY_IMAGE, 0.1, 1)
     

@@ -5,7 +5,7 @@ from random import randint
 
 from lib.inputcontrol import *
 
-from lib.threads.castspell import CastSpellThread
+from lib.threads.CastSpellThread import CastSpellThread
 
 class FakeAmpThread(object):
     def __init__(self):

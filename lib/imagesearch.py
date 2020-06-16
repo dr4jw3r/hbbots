@@ -143,7 +143,34 @@ def imagesearch(image, precision=0.8):
 
     return max_loc
 
+def imagesearch_fromscreenshot(image, screenshot, precision=0.8):
+    img_rgb = np.array(screenshot)
+    img_gray = cv2.cvtColor(img_rgb, cv2.COLOR_BGR2GRAY)
+    template = cv2.imread(image, 0)
+    template.shape[::-1]
 
+    res = cv2.matchTemplate(img_gray, template, cv2.TM_CCOEFF_NORMED)
+    min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
+
+    if max_val < precision:
+        return [-1,-1]
+
+    return max_loc
+
+def imagesearch_fromscreenshot_withtemplate(template, screenshot, precision=0.8, showprecision=None):
+    img_rgb = np.array(screenshot)
+    img_gray = cv2.cvtColor(img_rgb, cv2.COLOR_BGR2GRAY)
+    template.shape[::-1]
+
+    res = cv2.matchTemplate(img_gray, template, cv2.TM_CCOEFF_NORMED)
+    min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
+
+    if max_val < precision:
+        if showprecision:
+            print("min: ", min_val, " max: ", max_val)
+        return [-1,-1]
+
+    return max_loc
 
 '''
 Searchs for an image on screen continuously until it's found.

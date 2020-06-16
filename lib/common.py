@@ -2,19 +2,16 @@ import re
 ###########
 from time import sleep, time
 ###########
-from lib.ocr import OCR
-from lib.LocationMonitor import LocationMonitor
 from lib.imagesearch import imagesearch_numLoop, imagesearch, imagesearcharea
 from lib.inputcontrol import keydown, keyup, keypress, moveto, click, clickright
 from lib.inputcontrol import leftdown as mouseleftdown, leftup as mouseleftup, rightdown as mouserightdown, rightup as mouserightup
 from lib.inventory import openinventory, closeinventory, defaultposition, inventorypositions, wandposition
 from lib.charmove import *
 ###########
-from lib.threads.castspell import CastSpellThread
+from lib.threads.CastSpellThread import CastSpellThread
+from lib.utils.CancellationToken import CancellationToken
 
 # CONSTANTS #
-OCR = OCR()
-LocationMonitor = LocationMonitor()
 SELF_POSITION = (400, 280)
 
 # CHECKS #
@@ -245,33 +242,12 @@ def sellitems(cancellation_token):
             closeinventory()
 
 # EQUIPMENT #
-def equipstaff():
-    openinventory()
-    moveto(wandposition())
-    sleep(0.05)
-    keydown("ctrlleft")
-    click()
-    keyup("ctrlleft")
-    closeinventory()
-    sleep(1)
 
 # SPELLS #
-def recall(cancellation_token):
-    CastSpellThread("recall")
-    sleep(2)
-    moveto(SELF_POSITION)
-    sleep(0.1)
-
-    if cancellation_token.is_cancelled:
-        return
-
-    click()
-    sleep(2)
-
-def saferecall(cancellation_token):
+def saferecall(ocr, cancellation_token):
     current_location = None
     while current_location is None:
-        current_location = OCR.getlocation()
+        current_location = ocr.getlocation()
 
         if current_location is not None:
             current_location = current_location[0]
@@ -283,7 +259,7 @@ def saferecall(cancellation_token):
 
         recall(cancellation_token)
         sleep(0.1)
-        location = OCR.getlocation()
+        location = ocr.getlocation()
         if location is not None:
             new_location = location[0]        
 
@@ -326,11 +302,11 @@ def followwpts(cancellation_token, wpts, locationstop=None, tolerance=2):
 
             (onpoint, direction) = runto(direction, point, delay, locationstop, tolerance)
 
-def runto(direction, coords, delay=0, locationstop=None, tolerance=2):
+def runto(direction, coords, location_monitor, delay=0, locationstop=None, tolerance=2):
     sleep(delay)    
 
-    current_loc = LocationMonitor.getlocation()
-    current_coords = LocationMonitor.getcoordinates()
+    current_loc = location_monitor.getlocation()
+    current_coords = location_monitor.getcoordinates()
 
     if locationstop is not None and current_loc is not None:
         if current_loc.find(locationstop) != -1:
@@ -369,8 +345,8 @@ def runto(direction, coords, delay=0, locationstop=None, tolerance=2):
     elif direction[0] > 0 and direction[1] == 0:
         left(direction)    
 
-    current_loc = LocationMonitor.getlocation()
-    current_coords = LocationMonitor.getcoordinates()
+    current_loc = location_monitor.getlocation()
+    current_coords = location_monitor.getcoordinates()
 
     if locationstop is not None and current_loc is not None:
         if current_loc.find(locationstop) != -1:

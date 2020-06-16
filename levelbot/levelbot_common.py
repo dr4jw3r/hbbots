@@ -9,10 +9,10 @@ from lib.charmove import *
 from lib.inventory import openinventory, closeinventory, defaultposition, weaponsposition, wandposition, inventorypositions
 from lib.common import checkifdead, restart
 
-from lib.threads.castspell import CastSpellThread
+from lib.threads.CastSpellThread import CastSpellThread
 from lib.threads.killaround import KillAroundThread
 
-OCR = OCR()
+OCR = OCR(None)
 
 DISENCHANT_TIME = 5
 

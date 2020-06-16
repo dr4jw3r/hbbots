@@ -1,7 +1,7 @@
 import levelbot.levelbot_common
 
 from threading import Thread
-from lib.CancellationToken import CancellationToken
+from lib.utils.CancellationToken import CancellationToken
 from time import sleep
 
 from levelbot.levelbot_common import *

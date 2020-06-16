@@ -1,245 +1,303 @@
+import logging
+import inspect
 ###########
 from threading import Thread
 from time import sleep, time
-from math import ceil
 ###########
-from lib.CancellationToken import CancellationToken
+from lib.utils.CancellationToken import CancellationToken
+from lib.utils.ScreenshotThread import ScreenshotThread
+from lib.utils.TimekeeperThread import TimekeeperThread
 ###########
-from farmbot.common import *
-from lib.common import *
-from lib.LocationMonitor import LocationMonitor
-from levelbot.levelbot_common import equipweapon
-from farmbot.positions import FARM_WPTS
-from farmbot.harvester import Harvester
-from farmbot.planter import Planter
-from farmbot.scanner import Scanner
-from farmbot.drophandler import DropHandler
-from farmbot.hoethread import HoeThread
+from lib.waypoints import WAYPOINTS
 ###########
+from lib.actions import eat
+from lib.equipment import equipstaff, equiphoe, equipweapon
+from lib.inventory import closeinventory
+from lib.spells import recall
+from lib.ocr import OCR
+from lib.Movement import Movement
+from lib.utils.Scanner import Scanner
 from lib.threads.killaround import KillAroundThread
+###########
+from lib.monitor.LocationMonitor import LocationMonitor
+from lib.monitor.HealthMonitor import HealthMonitor
+###########
+from lib.npc.blacksmith import gotoblacksmith, repair
+from lib.npc.shopkeeper import gotoshop, sellproduce, buyseeds
+###########
+from farmbot.BotState import BotState
+from farmbot.HoeMonitor import HoeMonitor
+from farmbot.CropMonitor import CropMonitor
+from farmbot.BagMonitor import BagMonitor
+from farmbot.CursorMonitor import CursorMonitor
+from farmbot.Planter import Planter
+from farmbot.Harvester import Harvester
+from farmbot.DropHandler import DropHandler
+from farmbot.InventoryManager import InventoryManager
 
 class FarmThread(object):
-    def __init__(self, crop_type, sell_mode, start_at_farm):
+    def __init__(self, crop, start_at_farm):
+        # variables
         self.start_at_farm = start_at_farm
-        self.crop_type = crop_type
-        self.sell_mode = sell_mode
-        self.num_seed_bags = 36
+        self.crop = crop
         self.num_hoes = 4
+        self.pausing_authority = None
+
         self.cancellation_token = CancellationToken()
+        self.logger = logging.getLogger("hbbot.farmbot.main")        
 
-        self.location_monitor = LocationMonitor()
-        self.harvester = Harvester()
-        self.planter = Planter()
-        self.scanner = Scanner()
-        self.drop_handler = DropHandler()
-        self.hoe_thread = HoeThread()
+        # threads that need to be stopped
+        self.screenshot_thread = ScreenshotThread(self.cancellation_token)
+        self.location_monitor = LocationMonitor(self.screenshot_thread, self.cancellation_token) 
 
-        thread = Thread(target=self.run, args=())
-        thread.daemon = True
-        thread.start()
+        # utils
+        self.state = BotState()
+        self.ocr = OCR(self.screenshot_thread)
+        self.scanner = Scanner(self.screenshot_thread)
+        self.movement = Movement(self.location_monitor, self.cancellation_token)
+        self.planter = Planter(self.screenshot_thread)
+        self.drop_handler = DropHandler(self.crop, self.screenshot_thread)
+        self.inventory_manager = InventoryManager(self.scanner, self.crop)
 
-    def enemyscan(self):
-        has_enemy = self.scanner.scanenemy(self.cancellation_token)
-        if has_enemy:
-            kt = KillAroundThread(singlescan=True, no_loot=True)
-            kt.join()
-            sleep(0.1)
+        self.timekeeper = TimekeeperThread()
+        self.timekeeper.register(self.__harvesttimecallback, 400)
 
-        return has_enemy
+        self.hoe_monitor = HoeMonitor(self.screenshot_thread, self.state)
+        self.hoe_monitor.subscribe(self.__hoecallback)
+        
+        self.bag_monitor = BagMonitor(self.ocr, self.scanner)
+        self.bag_monitor.subscribe(self.__bagcallback)
 
-    def hoe(self, index):
+        self.crop_monitor = CropMonitor(self.screenshot_thread)
+        self.crop_monitor.subscribe(self.__cropcallback) 
+
+        self.health_monitor = HealthMonitor(self.ocr)
+        self.health_monitor.subscribe(self.__healthcallback)
+
+        self.cursor_monitor = CursorMonitor(self.screenshot_thread)
+
+        self.harvester = Harvester(self.crop_monitor, self.hoe_monitor, self.health_monitor, self.ocr, self.state)
+
+        # run the thread
+        self.thread = Thread(target=self.run, args=())
+        self.thread.daemon = True
+        self.thread.start()
+
+    # Utility functions
+
+    def __pause(self, authority):
+        curframe = inspect.currentframe()
+        calframe = inspect.getouterframes(curframe, 2)
+        self.logger.debug("__pause " + calframe[1][3])
+
+        if self.pausing_authority is None:
+            self.pausing_authority = authority
+
+            self.crop_monitor.pause()
+            self.hoe_monitor.pause()
+            self.bag_monitor.pause()
+            self.health_monitor.pause()
+            self.cursor_monitor.pause()
+            self.harvester.stopharvest()
+
+    def __resume(self, authority):
+        curframe = inspect.currentframe()
+        calframe = inspect.getouterframes(curframe, 2)
+        self.logger.debug("__resume " + calframe[1][3])
+
+        if authority == self.pausing_authority:
+            self.harvester.startharvest()
+            self.hoe_monitor.resume()
+            self.bag_monitor.resume()
+            self.crop_monitor.resume(0.25)
+            self.health_monitor.resume()
+            self.cursor_monitor.resume()
+            self.pausing_authority = None
+
+    def __cleanup(self):
+        threads = [
+            self.hoe_monitor,
+            self.crop_monitor,
+            self.timekeeper,
+            self.bag_monitor,
+            self.health_monitor,
+            self.cursor_monitor
+        ]
+        
+        self.harvester.stopharvest()
+        
+        for t in threads:
+            t.stop()
+            t.join()        
+
+    def __reset(self):
+        self.pausing_authority = None
+        self.timekeeper.reset()
+
+    # Action functions
+
+    def __blacksmith(self):
+        self.logger.debug("going to blacksmith")
+        gotoblacksmith(self.movement, self.scanner, self.cancellation_token)
+
+        if self.cancellation_token.is_cancelled:
+            return
+
+        self.logger.debug("repairing gear")
+        repair(self.movement, self.scanner, self.cancellation_token)
+        self.state.sethoeindex(0)
+
+    def __shop(self):
+        self.logger.debug("going to shop")
+        gotoshop(self.movement, self.scanner)
+
+        self.logger.debug("selling produce")
+        sellproduce(self.crop, self.scanner, self.cancellation_token)
+
+        self.logger.debug("buying seeds")
+        buyseeds(self.crop, self.scanner, self.movement, self.cancellation_token)
+
+    def __farm(self):        
+        sleep(1)    
+        
+        if not self.start_at_farm:
+            self.logger.debug("equipping staff")
+            equipstaff()
+            closeinventory()
+
+            if self.cancellation_token.is_cancelled:
+                return
+
+            sleep(2)
+
+            self.logger.debug("recalling (first)")
+            recall(self.cancellation_token)
+
+            if self.cancellation_token.is_cancelled:
+                return
+
+            self.__blacksmith()
+
+            if self.cancellation_token.is_cancelled:
+                return
+
+            self.logger.debug("recalling (second)")
+            recall(self.cancellation_token)
+
+            if self.cancellation_token.is_cancelled:
+                return
+
+            self.__shop()
+
+            if self.cancellation_token.is_cancelled:
+                return
+
+            self.logger.debug("recalling (third)")
+            recall(self.cancellation_token)
+
+            if self.cancellation_token.is_cancelled:
+                return
+
+            self.logger.debug("eating")
+            eat(1, self.cancellation_token)
+            
+            self.logger.debug("going to planting spot")
+            self.movement.followwaypoints(WAYPOINTS["planting_spot"])
+        
+            if self.cancellation_token.is_cancelled:
+                return
+
+        self.start_at_farm = False
+        self.logger.debug("going to planting spot 2")
+        self.movement.gotolastwaypoint(WAYPOINTS["planting_spot"])
+        
+        self.__reset()
         hoe_equipped = False
         while not hoe_equipped:
-            hoe_equipped = equiphoe(index)
+            if self.cancellation_token.is_cancelled:
+                return
 
+            hoe_equipped = equiphoe(self.state.gethoeindex(), self.ocr)
             if not hoe_equipped:
-                if index + 1 == self.num_hoes:
-                    index = 0
-                else:
-                    index += 1
+                self.state.incrementhoeindex()
 
-        return index
+        self.hoe_monitor.start(10)
+        self.crop_monitor.start()
+        self.harvester.startharvest()
+        self.health_monitor.start() 
+        self.bag_monitor.start()
+        self.cursor_monitor.start()
+        self.timekeeper.start()
+
+    # Callbacks
+
+    def __hoecallback(self, payload, args):
+        self.__pause("hoemonitor")
+        equiphoe(self.state.gethoeindex(), self.ocr)
+        self.__resume("hoemonitor")
+
+    def __cropcallback(self, payload, args):
+        self.__pause("cropmonitor")
+
+        for i in range(2):
+            current = self.location_monitor.getcoordinates()
+            if current is not None:
+                last_wpt = WAYPOINTS["planting_spot"][-1][0]
+                if current[0] != last_wpt[0] or current[1] != last_wpt[1]:
+                    self.movement.gotolastwaypoint(WAYPOINTS["planting_spot"])
+
+        self.planter.replant(payload["replant"])
+        self.__resume("cropmonitor")
+
+    def __bagcallback(self, payload, args):
+        self.__pause("bagmonitor")
+        self.timekeeper.pause()
+
+        # temporary workaround
+        self.state.sethoeindex(self.num_hoes - 1)
+        equiphoe(self.state.gethoeindex(), self.ocr)
+
+        self.harvester.harvestall(self.cancellation_token)
+        self.drop_handler.pickup(self.cancellation_token)
+        self.inventory_manager.moveproduce()
+        self.__farm()
+
+    def __healthcallback(self, payload, args):
+        if payload["health_ticked"]:
+            self.__pause("healthmonitor")
+            equipweapon()
+            t = KillAroundThread(self.ocr, singlescan=True, no_loot=True)
+            t.join()
+            sleep(0.1)
+            equiphoe(self.state.gethoeindex(), self.ocr)
+            self.__resume("healthmonitor")
+
+    def __harvesttimecallback(self):
+        self.__pause("harvesttime")
+
+        self.harvester.harvestall(self.cancellation_token)
+        self.drop_handler.pickup(self.cancellation_token)
+        self.inventory_manager.moveproduce()
+
+        self.__resume("harvesttime")
+
+    def __cursorcallback(self, payload, args):
+        self.__pause("cursormonitor")
+        equipweapon()
+        t = KillAroundThread(self.ocr, singlescan=True, no_loot=True)
+        t.join()
+        sleep(0.1)
+        equiphoe(self.state.gethoeindex(), self.ocr)
+        self.__resume("cursormonitor")
+
+    # Main functions
 
     def run(self):
-        sleep(1)        
-
-        while not self.cancellation_token.is_cancelled:
-            if not self.start_at_farm:
-                if self.cancellation_token.is_cancelled:
-                    break
-
-                print("Equip staff")
-                equipstaff()
-
-                if self.cancellation_token.is_cancelled:
-                    break
-
-                print("Recall")
-                recall(self.cancellation_token)
-                
-                if self.cancellation_token.is_cancelled:
-                    break
-
-                print("Go to blacksmith")
-                gotoblacksmith_fromrecall(self.cancellation_token)
-
-                if self.cancellation_token.is_cancelled:
-                    break
-
-                print("Repair gear")
-                repairgear(self.cancellation_token)
-
-                if self.cancellation_token.is_cancelled:
-                    break
-
-                print("Selling")
-                sellitems(self.cancellation_token)
-
-                if self.cancellation_token.is_cancelled:
-                    break
-
-                print("Recall again")
-                saferecall(self.cancellation_token)
-
-                if self.cancellation_token.is_cancelled:
-                    break
-
-                print("Go to shop")
-                gotoshop_fromrecall(self.cancellation_token)
-
-                if self.cancellation_token.is_cancelled:
-                    break
-
-                print("Sell produce")
-                sellproduce(self.crop_type, self.sell_mode, self.cancellation_token)
-
-                if self.cancellation_token.is_cancelled:
-                    break
-
-                print("Buy seeds")
-                buyseeds(self.crop_type, self.num_seed_bags, self.cancellation_token)
-
-                if self.cancellation_token.is_cancelled:
-                    break
-
-                print("Move the seed bags to a different position in the inventory")
-                moveseeds(self.cancellation_token)
-
-                if self.cancellation_token.is_cancelled:
-                    break
-
-                print("Recall back to farm")
-                saferecall(self.cancellation_token)
-
-                if self.cancellation_token.is_cancelled:
-                    break
-
-                print("Eat some foodzies")
-                eat(self.cancellation_token, 2)
-
-                if self.cancellation_token.is_cancelled:
-                    break
-
-                print("Run to farm spot")
-                gotofarm_fromrecall(self.cancellation_token)
-
-                if self.cancellation_token.is_cancelled:
-                    break
-            
-            print("Start at farm point")
-            self.start_at_farm = False
-            hoe_index = 0
-
-            verifylocation(self.cancellation_token)
-            
-            hoe_timer = time()
-            timeout_timer = time()
-            scan_time = time()
-            enemy_time = time()
-            finish_time = time()
-            seedbag_condition = False
-            moved_produce = False
-
-            print("Equip hoe")
-            hoe_index = self.hoe(hoe_index)
-            s_t = time()
-            while True:              
-                if time() - timeout_timer >= 900:
-                    print("Broke out with timeout")
-                    break
-
-                bag_pos = self.planter.findseedbag()
-                if bag_pos[0] == -1:
-                    print("No more seedbags")
-                    seedbag_condition = True
-
-                current_time = time()
-                self.harvester.startharvest()
-
-                sleep(1)
-
-                if self.cancellation_token.is_cancelled:
-                    break
-
-                # every 1 seconds check
-                if current_time - scan_time >= 1:
-                    replant = self.scanner.scan()
-
-                    if any(replant):
-                        self.harvester.stopharvest()
-
-                        coords = self.location_monitor.getcoordinates()
-                        if coords[0] != FARM_WPTS[-1][0] or coords[1] != FARM_WPTS[-1][1]:
-                            verifylocation(self.cancellation_token)
-
-                        self.planter.replant(replant)
-                    
-                    scan_time = time()
-
-                # broken somehow
-                if self.hoe_thread.ishoebroken() or time() - hoe_timer >= 30:
-                    print("Hoe broke")
-                    self.harvester.stopharvest()
-                    hoe_index = self.hoe(hoe_index)
-                    self.hoe_thread.acknowledge()
-                    hoe_timer = time()                                        
-
-                if current_time - enemy_time >= 10:                    
-                    if self.enemyscan():
-                        hoe_index = self.hoe(hoe_index)
-                    enemy_time = time()
-
-                # after 5 minutes harvest all
-                # 780 = 13 mins (15 min despawn?)
-                if (current_time - finish_time >= 500) or seedbag_condition:
-                    print("Finish timer. Seedbag: ", seedbag_condition)
-                    finish_time = time()
-                    for i in range(10):
-                        replant = self.scanner.scan()
-                        for i in range(len(replant)):
-                            if not replant[i]:
-                                self.harvester.harvestsingle(i, self.hoe_thread, hoe_index, self.cancellation_token)
-                        
-                        sleep(0.1)
-                    
-                    # check for drops here (organised left to right)
-                    self.harvester.stopharvest()
-                    self.drop_handler.pickup(self.crop_type, self.cancellation_token)                    
-                    moveproduce(self.crop_type)
-                    
-                    if not seedbag_condition:
-                        if self.enemyscan():
-                            hoe_index = self.hoe(hoe_index)
-                
-                if seedbag_condition:
-                    break
-
-            self.harvester.stopharvest()
-            print("Elapsed time: ", time() - s_t)
-            self.hoe_thread.stop()
-            self.enemyscan()
-                
+        self.logger.debug("started")
+        self.__farm()
+               
     def stop(self):
         self.cancellation_token.cancel()
-        self.hoe_thread.stop()
-        self.location_monitor.stop()
+        self.__cleanup()
+        self.thread.join()
+        self.logger.debug("stopped")

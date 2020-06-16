@@ -8,16 +8,15 @@ from lib.inputcontrol import *
 from lib.pickup_gold import checkforgold
 from lib.pickup_drops import checkfordrops
 from lib.common import chugpots, disenchant, eatmeat, checkifdead
-from lib.ocr import OCR
-from lib.CancellationToken import CancellationToken
+from lib.utils.CancellationToken import CancellationToken
 #====
 
 class KillAroundThread(object):
-    def __init__(self, meat_type=None, singlescan=False, no_loot=False):
+    def __init__(self, ocr, meat_type=None, singlescan=False, no_loot=False):
         self.meat_type = meat_type
         self.no_loot = no_loot
         self.singlescan = singlescan
-        self.OCR = OCR()
+        self.ocr = ocr
         self.cancellation_token = CancellationToken()
         self.POSITIONS = [
             ( 367, 260 ),
@@ -56,7 +55,7 @@ class KillAroundThread(object):
         self.thread.start()
 
     def checkinventory(self):
-        if self.OCR.inventoryfull():
+        if self.ocr.inventoryfull():
             rightup()
             chugpots()
             sleep(0.5)

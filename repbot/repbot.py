@@ -4,7 +4,7 @@ from time import sleep, time
 
 from threading import Thread
 
-from lib.CancellationToken import CancellationToken
+from lib.utils.CancellationToken import CancellationToken
 from lib.ocr import OCR
 from lib.inputcontrol import keypress, keyup
 
