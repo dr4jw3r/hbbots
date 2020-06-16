@@ -28,6 +28,7 @@ class Harvester(object):
     def stopharvest(self):        
         self.logger.debug("stop harvest")
         rightup()
+        sleep(0.1)
 
     def harvestall(self, cancellation_token):
         self.hoe_monitor.subscribe(self.__hoecallback, { "cancellation_token": cancellation_token })
