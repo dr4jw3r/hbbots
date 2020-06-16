@@ -7,7 +7,7 @@ CROPS = {
     "corn": Crop("corn", 36, "click"),
     "bellflower": Crop("bellflower", 36, "enter"),
     "tomato": Crop("tomato", 36, "click"),
-    "grapes": Crop("grapes", 36, "enter"),
+    "grapes": Crop("grapes", 36, "click"),
     "ginseng": Crop("ginseng", 36, "click")
 }
 
