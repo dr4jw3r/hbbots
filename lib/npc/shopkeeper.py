@@ -123,9 +123,13 @@ def buyseeds(crop, scanner, movement, cancellation_token):
 
     while not bag_moved:
         clicked = False
+        npc_clicked = False
         bag_moved = False
         while not clicked and not bag_moved:
-            clicked = clicknpc("shopkeeper", scanner, cancellation_token)
+            while not npc_clicked:
+                npc_clicked = clicknpc("shopkeeper", scanner, cancellation_token)
+                movement.gotolastwaypoint(WAYPOINTS["shop"], "shop")
+
             clicked = buttonbuymisc()
             __scrolldown(80)
             clicked = buttonseedbag(crop.name)
