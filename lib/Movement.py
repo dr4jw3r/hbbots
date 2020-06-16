@@ -5,6 +5,7 @@ from time import sleep, time
 from lib.inputcontrol import rightdown, rightup, moveto, click, clickright
 from lib.spells import recall
 from lib.equipment import equipstaff
+from lib.inventory import closeinventory
 
 class Movement(object):
     def __init__(self, location_monitor, cancellation_token):
@@ -63,7 +64,7 @@ class Movement(object):
                     self.logger.debug("locationstop reached")
                     moveto((400, 600))
                     sleep(0.05)
-                    clickright(5)
+                    clickright()
                     self.__reset()
                     return True
 
@@ -77,7 +78,7 @@ class Movement(object):
                     self.logger.debug("point reached")
                     moveto((400, 600))
                     sleep(0.05)
-                    clickright(5)
+                    clickright()
                     self.__reset()
                     return True
 
@@ -108,6 +109,8 @@ class Movement(object):
                 sleep(1)
 
     def followwaypoints(self, waypoints, locationstop=None):
+        closeinventory()
+
         for waypoint in waypoints:
             if self.cancellation_token.is_cancelled:
                 break

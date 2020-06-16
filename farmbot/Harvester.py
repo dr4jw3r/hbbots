@@ -21,7 +21,7 @@ class Harvester(object):
     def startharvest(self):        
         self.logger.debug("start harvest")
         self.__movetoplantingposition("center")
-        sleep(0.05)
+        sleep(0.1)
         rightdown()
         sleep(0.05)
  

@@ -93,12 +93,12 @@ class FarmThread(object):
         if self.pausing_authority is None:
             self.pausing_authority = authority
 
+            self.harvester.stopharvest()
             self.crop_monitor.pause()
             self.hoe_monitor.pause()
             self.bag_monitor.pause()
             self.health_monitor.pause()
             self.cursor_monitor.pause()
-            self.harvester.stopharvest()
 
     def __resume(self, authority):
         curframe = inspect.currentframe()
@@ -162,7 +162,15 @@ class FarmThread(object):
         
         if not self.start_at_farm:
             self.logger.debug("equipping staff")
+
+            if self.cancellation_token.is_cancelled:
+                return
+
             equipstaff()
+
+            if self.cancellation_token.is_cancelled:
+                return
+
             closeinventory()
 
             if self.cancellation_token.is_cancelled:
@@ -258,8 +266,20 @@ class FarmThread(object):
         equiphoe(self.state.gethoeindex(), self.ocr)
 
         self.harvester.harvestall(self.cancellation_token)
+
+        if self.cancellation_token.is_cancelled:
+            return
+
         self.drop_handler.pickup(self.cancellation_token)
+        
+        if self.cancellation_token.is_cancelled:
+            return
+
         self.inventory_manager.moveproduce()
+
+        if self.cancellation_token.is_cancelled:
+            return
+
         self.__farm()
 
     def __healthcallback(self, payload, args):

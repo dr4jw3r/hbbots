@@ -16,7 +16,6 @@ class PausableThread(object):
         self.is_paused = True
 
     def resume(self, delay=0):
-        print("resuming")
         self.delay = delay
         self.is_paused = False
 
