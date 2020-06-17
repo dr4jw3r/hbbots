@@ -27,7 +27,6 @@ from repbot.repbot import RepBotThread
 
 from farmbot.farmbot import FarmThread
 from farmbot.Crop import Crop
-from farmbot.crops import getcrop
 
 class HotkeyHandler():
     def __init__(self):
@@ -41,8 +40,6 @@ class HotkeyHandler():
 
         self.st = None
         self.ocr_temp = None
-
-        self.crop = getcrop("ginseng")
 
     def handlehotkey(self, event, hotkey, *args):
         winsound.MessageBeep()
@@ -92,13 +89,13 @@ class HotkeyHandler():
                 self.repthread = None
         elif action == "farmbot":            
             if self.farmthread is None:
-                self.farmthread = FarmThread(self.crop, False)
+                self.farmthread = FarmThread(False)
             else:
                 self.farmthread.stop()
                 self.farmthread = None
         elif action == "farmbot_farm":
             if self.farmthread is None:
-                self.farmthread = FarmThread(self.crop, True)
+                self.farmthread = FarmThread(True)
             else:
                 self.farmthread.stop()
                 self.farmthread = None

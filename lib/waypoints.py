@@ -1,3 +1,8 @@
+from core.configurationparser import readconfig
+
+planting_x = int(readconfig()["FARMBOT"]["PlantingLocationX"])
+planting_y = int(readconfig()["FARMBOT"]["PlantingLocationY"])
+
 WAYPOINTS = {
     "blacksmith": [
         [(58, 101), 5],
@@ -16,7 +21,7 @@ WAYPOINTS = {
     "planting_spot": [
         [(59, 100), 5],
         [(70, 103), 5],
-        [(90, 116), 0],
+        [(planting_x, planting_y), 0],
     ]
     
 }

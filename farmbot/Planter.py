@@ -18,9 +18,9 @@ class Planter(object):
         has_bag = self._clickbag()
         if has_bag:
             moveto((position.x, position.y))
-            sleep(0.1)
+            sleep(0.25)
             click()
-            sleep(0.2)
+            sleep(0.25)
 
         return has_bag
 

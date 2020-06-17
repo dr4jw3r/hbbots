@@ -4,6 +4,8 @@ import inspect
 from threading import Thread
 from time import sleep, time
 ###########
+from core import configurationparser
+###########
 from lib.utils.CancellationToken import CancellationToken
 from lib.utils.ScreenshotThread import ScreenshotThread
 from lib.utils.TimekeeperThread import TimekeeperThread
@@ -34,12 +36,16 @@ from farmbot.Planter import Planter
 from farmbot.Harvester import Harvester
 from farmbot.DropHandler import DropHandler
 from farmbot.InventoryManager import InventoryManager
+from farmbot.crops import getcrop
 
 class FarmThread(object):
-    def __init__(self, crop, start_at_farm):
+    def __init__(self, start_at_farm):
         # variables
         self.start_at_farm = start_at_farm
-        self.crop = crop
+
+        crop_name = configurationparser.readconfig()["FARMBOT"]["Crop"]
+        self.crop = getcrop(crop_name)
+
         self.num_hoes = 4
         self.pausing_authority = None
 

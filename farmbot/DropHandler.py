@@ -1,6 +1,8 @@
 from cv2 import imread
 from time import sleep, time
 # 
+from core.configurationparser import readconfig
+#
 from lib.imagesearch import imagesearch_fromscreenshot_withtemplate
 from lib.inputcontrol import moveto, click, clickright
 from lib.positions import SELF
@@ -12,7 +14,7 @@ class DropHandler(object):
         self.region_corner = (300, 239)
         self.region_size = (194, 130)
         self.timeout = 10
-        self.drop_precision = 0.7
+        self.drop_precision = float(readconfig()["FARMBOT"]["DropPrecision"])
 
     def __getdrop(self, pos, cancellation_token):
         moveto(pos)
