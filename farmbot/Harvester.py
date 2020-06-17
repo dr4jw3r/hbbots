@@ -10,11 +10,9 @@ from farmbot.positions import PLANTING_POSITIONS
 # 
 
 class Harvester(object):
-    def __init__(self, crop_monitor, hoe_monitor, health_monitor, ocr, state):
+    def __init__(self, crop_monitor, ocr, state):
         self.logger = logging.getLogger("hbbot.harvester")
         self.crop_monitor = crop_monitor
-        self.hoe_monitor = hoe_monitor
-        self.health_monitor = health_monitor
         self.ocr = ocr
         self.state = state
 
@@ -30,10 +28,7 @@ class Harvester(object):
         rightup()
         sleep(0.1)
 
-    def harvestall(self, cancellation_token):
-        self.hoe_monitor.subscribe(self.__hoecallback, { "cancellation_token": cancellation_token })
-        self.health_monitor.subscribe(self.__healthcallback)
-
+    def harvestall(self, replant, cancellation_token):
         replant = self.crop_monitor.scan()
         needs_harvest = [False] * len(replant)
         
@@ -48,23 +43,7 @@ class Harvester(object):
             if needs_harvest[i]:
                 self.__harvestsingle(i, cancellation_token)
 
-        self.health_monitor.unsubscribe(self.__healthcallback)
-        self.hoe_monitor.unsubscribe(self.__hoecallback)
         self.stopharvest()
-
-    def __hoecallback(self, payload, args):
-        self.stopharvest()
-        equiphoe(self.state.gethoeindex(), self.ocr)
-        self.harvestall(args["cancellation_token"])
-
-    def __healthcallback(self, payload, args):
-        # extract this and share with farmbot
-        if payload["health_ticked"]:
-            equipweapon()
-            t = KillAroundThread(self.ocr, singlescan=True, no_loot=True)
-            t.join()
-            sleep(0.1)
-            equiphoe(self.state.gethoeindex(), self.ocr)
 
     def __harvestsingle(self, index, cancellation_token):
         position = PLANTING_POSITIONS[index]
@@ -80,6 +59,11 @@ class Harvester(object):
         if has_crop:
             self.__harvestsingle(index, cancellation_token)                    
         
+    def moveto(self, index):
+        position = PLANTING_POSITIONS[index]
+        print("moving to", position.description)
+        self.__movetoplantingposition(position.description)
+
     def __movetoplantingposition(self, position):
         for pos in PLANTING_POSITIONS:
             if pos.description == position:

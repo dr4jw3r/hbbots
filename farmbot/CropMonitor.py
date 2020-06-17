@@ -24,7 +24,7 @@ class CropMonitor(PublisherThread, PausableThread):
         
         self.box_size = (32, 32)
         self.positions = ["left", "mid", "right"]
-        self.precisions = { "left": 0.5, "mid": 0.5, "right": 0.6 }
+        self.precisions = { "left": 0.5, "mid": 0.5, "right": 0.53 }
         self.scansingle_precisions = { "left": 0.3, "mid": 0.48, "right": 0.3 }
 
         IMAGES_DIR = "./common/samples/produce/crops/"
@@ -61,7 +61,7 @@ class CropMonitor(PublisherThread, PausableThread):
             x2 = (self.box_size[0] * i) + self.box_size[0]
             y2 = self.box_size[1]
 
-            cropped = screenshot.crop((x1, 0, x2, y2 ))
+            cropped = screenshot.crop((x1, 0, x2, y2))
 
             for template in templates:
                 pos = imagesearch_fromscreenshot_withtemplate(template["image"], cropped, precision=self.precisions[position])

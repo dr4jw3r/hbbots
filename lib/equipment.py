@@ -1,6 +1,6 @@
 from time import sleep
 # 
-from lib.inventory import openinventory, closeinventory, wandposition, hoepositions, weaponsposition
+from lib.inventory import openinventory, wandposition, hoepositions, weaponsposition
 from lib.inputcontrol import moveto, keydown, keyup, click
 
 def equipstaff():
@@ -41,6 +41,5 @@ def equipweapon():
     click()
     keyup("ctrlleft")
     sleep(0.1)
-    closeinventory()
     sleep(0.1)
 
