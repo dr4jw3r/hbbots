@@ -295,7 +295,7 @@ class FarmThread(object):
             self.timekeeper.pause()
 
             self.state.sethoeindex(self.num_hoes - 1)
-            equiphoe(self.state.gethoeindex())
+            equiphoe(self.state.gethoeindex(), self.ocr)
 
             self.crop_monitor.unsubscribe(self.__cropcallback)
             self.crop_monitor.subscribe(self.__harvestallcallback)
