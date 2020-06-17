@@ -123,7 +123,6 @@ class Movement(object):
             if not reached:
                 self.followwaypoints(waypoints, locationstop)
                 break
-
         
     def gotolastwaypoint(self, waypoints, locationstop=None):
         waypoint = waypoints[-1]
@@ -131,3 +130,9 @@ class Movement(object):
         tolerance = waypoint[1]
         self.__gotopoint(point, tolerance, locationstop)
     
+    def stopmoving(self):
+        sleep(0.1)
+        moveto((400, 600))
+        sleep(0.1)
+        clickright()
+        sleep(0.1)

@@ -20,4 +20,4 @@ class BotState(object):
         self.logger.debug("incrementhoeindex " + calframe[1][3] + " " + str(self.__hoe_index))
 
         if self.__hoe_index == 4:
-            print("overflow")            
+            self.__hoe_index = 0

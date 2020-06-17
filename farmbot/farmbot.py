@@ -61,6 +61,7 @@ class FarmThread(object):
 
         self.timekeeper = TimekeeperThread()
         self.timekeeper.register(self.__harvesttimecallback, 400)
+        self.timekeeper.register(self.__timeoutcallback, 1000)
 
         self.hoe_monitor = HoeMonitor(self.screenshot_thread, self.state)
         self.hoe_monitor.subscribe(self.__hoecallback)
@@ -309,6 +310,12 @@ class FarmThread(object):
         sleep(0.1)
         equiphoe(self.state.gethoeindex(), self.ocr)
         self.__resume("cursormonitor")
+
+    def __timeoutcallback(self):
+        self.logger.debug("timeout reached")
+        self.__pause("timeoutcallback")
+        self.movement.stopmoving()
+        self.__farm()
 
     # Main functions
 

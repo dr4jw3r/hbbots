@@ -8,7 +8,9 @@ CROPS = {
     "bellflower": Crop("bellflower", 36, "enter"),
     "tomato": Crop("tomato", 36, "click"),
     "grapes": Crop("grapes", 36, "click"),
-    "ginseng": Crop("ginseng", 36, "click")
+    "bluegrapes": Crop("bluegrapes", 36, "click"),
+    "mushroom": Crop("mushroom", 36, "enter"),
+    "ginseng": Crop("ginseng", 36, "click"),
 }
 
 def getcrop(crop_name):
