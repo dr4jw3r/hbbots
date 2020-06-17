@@ -143,7 +143,10 @@ def buyseeds(crop, scanner, movement, cancellation_token):
             if cancellation_token.is_cancelled:
                 return
 
-            bags_str = str(crop.num_bags)
+            if crop.num_bags < 10:
+                bags_str = "0" + str(crop.num_bags)
+            else:
+                bags_str = str(crop.num_bags)
 
             buttonquantitytens(int(bags_str[0]))
 

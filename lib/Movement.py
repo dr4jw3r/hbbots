@@ -99,6 +99,7 @@ class Movement(object):
             if x > 600:
                 x = 600
 
+            closeinventory()
             moveto((x, y))
             sleep(0.1)
             click()

@@ -25,7 +25,7 @@ def equiphoe(hoe_index, ocr):
     if hoe_pos[0] != -1:
         moveto(hoe_pos)
         sleep(0.1)
-        click(2)
+        click(2, 0.05)
         sleep(0.2)
 
     sleep(0.2)

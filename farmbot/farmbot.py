@@ -92,12 +92,12 @@ class FarmThread(object):
 
     # Utility functions
 
-    def __pause(self, authority):
+    def __pause(self, authority, force=False):
         curframe = inspect.currentframe()
         calframe = inspect.getouterframes(curframe, 2)
         self.logger.debug("__pause " + calframe[1][3])
 
-        if self.pausing_authority is None:
+        if self.pausing_authority is None or force is True:
             self.pausing_authority = authority
 
             self.harvester.stopharvest()
@@ -107,12 +107,11 @@ class FarmThread(object):
             self.health_monitor.pause()
             self.cursor_monitor.pause()
 
-    def __resume(self, authority):
-        curframe = inspect.currentframe()
-        calframe = inspect.getouterframes(curframe, 2)
-        self.logger.debug("__resume " + calframe[1][3])
-
+    def __resume(self, authority):        
         if authority == self.pausing_authority:
+            curframe = inspect.currentframe()
+            calframe = inspect.getouterframes(curframe, 2)
+            self.logger.debug("__resume " + calframe[1][3])
             self.harvester.startharvest()
             self.hoe_monitor.resume()
             self.bag_monitor.resume()
@@ -265,7 +264,7 @@ class FarmThread(object):
         self.__resume("cropmonitor")
 
     def __bagcallback(self, payload, args):
-        self.__pause("bagmonitor")
+        self.__pause("bagmonitor", True)
         self.timekeeper.pause()
 
         # temporary workaround
