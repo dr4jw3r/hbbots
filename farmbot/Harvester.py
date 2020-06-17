@@ -61,7 +61,6 @@ class Harvester(object):
         
     def moveto(self, index):
         position = PLANTING_POSITIONS[index]
-        print("moving to", position.description)
         self.__movetoplantingposition(position.description)
 
     def __movetoplantingposition(self, position):
