@@ -31,7 +31,7 @@ def __clicksell(crop, scanner, cancellation_token):
                 sleep(0.1)
 
             buttonsellitems()
-            moveto(produce_pos, 18, 18)
+            moveto(produce_pos, crop.offset[0], crop.offset[1])
             sleep(0.1)
             click(18)
             sleep(0.1)
@@ -52,7 +52,7 @@ def __entersell(crop, scanner, cancellation_token):
                 sleep(0.1)
             
             buttonsellitems()
-            moveto(produce_pos, 10, 10)
+            moveto(produce_pos, crop.offset[0], crop.offset[1])
             sleep(0.1)
             click(2)
             sleep(0.1)
@@ -122,11 +122,17 @@ def buyseeds(crop, scanner, movement, cancellation_token):
     bag_moved = False
 
     while not bag_moved:
+        if cancellation_token.is_cancelled:
+                return
+                
         clicked = False
         npc_clicked = False
         bag_moved = False
         while not clicked and not bag_moved:
             while not npc_clicked:
+                if cancellation_token.is_cancelled:
+                    return
+
                 npc_clicked = clicknpc("shopkeeper", scanner, cancellation_token)
                 movement.gotolastwaypoint(WAYPOINTS["shop"], "shop")
 

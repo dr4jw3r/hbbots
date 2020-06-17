@@ -51,7 +51,7 @@ class HoeMonitor(PublisherThread, PausableThread):
             y2 = b[0][1] + a[3]
 
             screenshot = self.screenshot_thread.croppedcoordinates(x1, y1, x2, y2)
-            pos = imagesearch_fromscreenshot_withtemplate(self.template, screenshot, precision=0.9)
+            pos = imagesearch_fromscreenshot_withtemplate(self.template, screenshot, precision=0.95)
             screenshot.save("hoe_area_{0}.png".format(self.state.gethoeindex()))
 
             if pos[0] != -1:

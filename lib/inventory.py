@@ -35,7 +35,7 @@ def _findcorner():
 
 def getbounds():
     openinventory()
-    sleep(0.01)
+    sleep(0.1)
     corner = _findcorner()
     corner2 = (corner[0] + INVENTORY_WINDOW_SIZE[0], corner[1] + INVENTORY_WINDOW_SIZE[1])
     return (corner, corner2)

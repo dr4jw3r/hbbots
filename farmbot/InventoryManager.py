@@ -12,14 +12,14 @@ class InventoryManager(object):
     def moveproduce(self):
         pos = self.scanner.findininventory(self.crop.name, 0.7)
         if pos[0] != -1:
-            moveto(pos, 10, 10)
+            moveto(pos, self.crop.offset[0], self.crop.offset[1])
             sleep(0.2)
             keydown("shiftleft")
             sleep(0.2)
             leftdown()
             sleep(0.2)
             default_position = defaultposition()
-            default_position = (default_position[0] + 50, default_position[2])
+            default_position = (default_position[0] + 50, default_position[1])
             moveto(default_position)
             sleep(0.2)
             leftup()

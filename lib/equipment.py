@@ -29,7 +29,7 @@ def equiphoe(hoe_index, ocr):
 
     sleep(0.21)
     is_exhausted = ocr.checkexhausted()
-    sleep(0.1)
+    sleep(0.2)
     return not is_exhausted
 
 def equipweapon():
