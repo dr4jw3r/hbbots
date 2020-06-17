@@ -26,8 +26,9 @@ def equiphoe(hoe_index, ocr):
         moveto(hoe_pos)
         sleep(0.1)
         click(2)
+        sleep(0.2)
 
-    sleep(0.21)
+    sleep(0.2)
     is_exhausted = ocr.checkexhausted()
     sleep(0.2)
     return not is_exhausted

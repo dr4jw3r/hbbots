@@ -10,19 +10,10 @@ def eat(number, cancellation_token):
             return
 
         createfood(cancellation_token)
+        sleep(0.2)
+        click()
+        sleep(0.2)
         
-    click()
-
-    if cancellation_token.is_cancelled:
-        return
-
-    sleep(0.2)
-
-    if cancellation_token.is_cancelled:
-        return
-
-    click()
-    sleep(1)
     openinventory()
 
     if cancellation_token.is_cancelled:

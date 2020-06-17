@@ -103,6 +103,7 @@ class CropMonitor(PublisherThread, PausableThread):
 
             if any(replant):
                 self.notify({"replant": replant})
+                sleep(8)
 
             sleep(1)
 
