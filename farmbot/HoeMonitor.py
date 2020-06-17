@@ -54,8 +54,7 @@ class HoeMonitor(PublisherThread, PausableThread):
             pos = imagesearch_fromscreenshot_withtemplate(self.template, screenshot, precision=0.95)
             screenshot.save("hoe_area_{0}.png".format(self.state.gethoeindex()))
 
-            if pos[0] != -1:
-                self.state.incrementhoeindex()
-                self.notify({ "hoe_index": self.state.gethoeindex() })
+            if pos[0] != -1:                
+                self.notify({})
 
         self.logger.debug("stopped")

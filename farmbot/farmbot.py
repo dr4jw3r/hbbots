@@ -253,6 +253,7 @@ class FarmThread(object):
     def __hoecallback(self, payload, args):
         if self.__pause("hoemonitor"):
             self.logger.debug("hoe callback")
+            self.state.incrementhoeindex()
             equiphoe(self.state.gethoeindex(), self.ocr)
             self.__resume("hoemonitor")
 
@@ -293,11 +294,12 @@ class FarmThread(object):
             self.logger.debug("bag callback")
             self.timekeeper.pause()
 
+            self.state.sethoeindex(self.num_hoes - 1)
+            equiphoe(self.state.gethoeindex())
+
             self.crop_monitor.unsubscribe(self.__cropcallback)
             self.crop_monitor.subscribe(self.__harvestallcallback)
             self.crop_monitor.resume(0.25)
-            self.hoe_monitor.resume()
-            self.health_monitor.resume()
             self.harvester.startharvest()
 
     def __healthcallback(self, payload, args):
