@@ -66,6 +66,7 @@ class FarmThread(object):
         self.inventory_manager = InventoryManager(self.scanner, self.crop)
 
         self.timekeeper = TimekeeperThread()
+        harvest_time_timeout = int(configurationparser.readconfig()["FARMBOT"]["HarvestTimeout"])
         self.timekeeper.register(self.__harvesttimecallback, 400)
         self.timekeeper.register(self.__timeoutcallback, 1000)
 
