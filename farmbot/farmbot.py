@@ -67,7 +67,7 @@ class FarmThread(object):
 
         self.timekeeper = TimekeeperThread()
         harvest_time_timeout = int(configurationparser.readconfig()["FARMBOT"]["HarvestTimeout"])
-        self.timekeeper.register(self.__harvesttimecallback, 400)
+        self.timekeeper.register(self.__harvesttimecallback, harvest_time_timeout)
         self.timekeeper.register(self.__timeoutcallback, 1000)
 
         self.hoe_monitor = HoeMonitor(self.screenshot_thread, self.state)
