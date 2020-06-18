@@ -66,7 +66,7 @@ class FarmThread(object):
         self.inventory_manager = InventoryManager(self.scanner, self.crop)
 
         self.timekeeper = TimekeeperThread()
-        # self.timekeeper.register(self.__harvesttimecallback, 400)
+        self.timekeeper.register(self.__harvesttimecallback, 60)
         self.timekeeper.register(self.__timeoutcallback, 1000)
 
         self.hoe_monitor = HoeMonitor(self.screenshot_thread, self.state)
@@ -110,8 +110,8 @@ class FarmThread(object):
 
         return False
 
-    def __resume(self, authority):        
-        if authority == self.pausing_authority:
+    def __resume(self, authority, force=False):        
+        if authority == self.pausing_authority or force:
             curframe = inspect.currentframe()
             calframe = inspect.getouterframes(curframe, 2)
             self.logger.debug("__resume " + calframe[1][3])
@@ -229,7 +229,8 @@ class FarmThread(object):
         self.start_at_farm = False
         self.logger.debug("going to planting spot 2")
         self.movement.gotolastwaypoint(WAYPOINTS["planting_spot"])
-        
+        self.drop_handler.pickup(self.cancellation_token)
+
         self.__reset()
         hoe_equipped = False
         while not hoe_equipped:
@@ -266,6 +267,7 @@ class FarmThread(object):
                     last_wpt = WAYPOINTS["planting_spot"][-1][0]
                     if current[0] != last_wpt[0] or current[1] != last_wpt[1]:
                         self.movement.gotolastwaypoint(WAYPOINTS["planting_spot"])
+                        sleep(0.2)
 
             self.planter.replant(payload["replant"])
             self.__resume("cropmonitor")
@@ -287,7 +289,13 @@ class FarmThread(object):
             self.harvester.stopharvest()
             self.drop_handler.pickup(self.cancellation_token)
             self.inventory_manager.moveproduce()
-            self.__farm()
+
+            if args is None or not args["intermediate"]:
+                self.__farm()
+            else:
+                self.crop_monitor.unsubscribe(self.__harvestallcallback)
+                self.crop_monitor.subscribe(self.__cropcallback)
+                self.__resume("harvestdone", True)
 
     def __bagcallback(self, payload, args):
         if self.__pause("bagmonitor", True):
@@ -308,16 +316,18 @@ class FarmThread(object):
             equipweapon()
             t = KillAroundThread(self.ocr, singlescan=True, no_loot=True)
             t.join()
-            sleep(0.1)
+            sleep(0.2)
             equiphoe(self.state.gethoeindex(), self.ocr)
             self.__resume("healthmonitor")
 
     def __harvesttimecallback(self):
-        if self.__pause("harvesttime"):
+        if self.__pause("harvesttime", True):
             self.logger.debug("harvest time callback")
-            self.harvester.harvestall(self.cancellation_token)
-            self.drop_handler.pickup(self.cancellation_token)
-            self.inventory_manager.moveproduce()
+
+            self.crop_monitor.unsubscribe(self.__cropcallback)
+            self.crop_monitor.subscribe(self.__harvestallcallback, {"intermediate": True})
+            self.crop_monitor.resume(0.25)
+            self.harvester.startharvest()       
 
             self.__resume("harvesttime")
 

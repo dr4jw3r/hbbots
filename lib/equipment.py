@@ -41,5 +41,4 @@ def equipweapon():
     click()
     keyup("ctrlleft")
     sleep(0.1)
-    sleep(0.1)
 
