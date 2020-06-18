@@ -66,7 +66,7 @@ class FarmThread(object):
         self.inventory_manager = InventoryManager(self.scanner, self.crop)
 
         self.timekeeper = TimekeeperThread()
-        self.timekeeper.register(self.__harvesttimecallback, 60)
+        self.timekeeper.register(self.__harvesttimecallback, 400)
         self.timekeeper.register(self.__timeoutcallback, 1000)
 
         self.hoe_monitor = HoeMonitor(self.screenshot_thread, self.state)
