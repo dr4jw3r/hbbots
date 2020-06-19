@@ -25,7 +25,7 @@ class CropMonitor(PublisherThread, PausableThread):
         self.box_size = (32, 32)
         self.positions = ["left", "mid", "right"]
         self.precisions = {
-            "normal": { "left": 0.5, "mid": 0.5, "right": 0.69 },
+            "normal": { "left": 0.5, "mid": 0.5, "right": 0.5 },
             "harvestall": { "left": 0.5, "mid": 0.5, "right": 0.5 }
         }
 

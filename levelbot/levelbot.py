@@ -6,6 +6,8 @@ from time import sleep
 
 from levelbot.levelbot_common import *
 from lib.common import *
+#
+from lib.equipment import equipstaff
 
 class LevellingBotThread(object):
     def __init__(self, start_at_pit, meat_type):
