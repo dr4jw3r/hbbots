@@ -92,7 +92,7 @@ class OCR(object):
             split = res.split("(")
             loc = split[0].strip()
 
-            m = re.findall('\d+', split[1])
+            m = re.findall('\d+', res)
             coords = (int(m[-2]), int(m[-1]))
 
             return (loc, coords)
