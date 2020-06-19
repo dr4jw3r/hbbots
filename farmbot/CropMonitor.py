@@ -24,8 +24,12 @@ class CropMonitor(PublisherThread, PausableThread):
         
         self.box_size = (32, 32)
         self.positions = ["left", "mid", "right"]
-        self.precisions = { "left": 0.5, "mid": 0.5, "right": 0.65 }
-        self.scansingle_precisions = { "left": 0.3, "mid": 0.48, "right": 0.3 }
+        self.precisions = {
+            "normal": { "left": 0.5, "mid": 0.5, "right": 0.69 },
+            "harvestall": { "left": 0.5, "mid": 0.5, "right": 0.5 }
+        }
+
+        self.current_precisions = self.precisions["normal"]
 
         IMAGES_DIR = "./common/samples/produce/crops/"
         self.templates = self.__readimages(IMAGES_DIR)
@@ -46,6 +50,10 @@ class CropMonitor(PublisherThread, PausableThread):
 
         return templates
 
+    def useprecisions(self, precisions):
+        self.logger.debug("setting precisions: " + precisions)
+        self.current_precisions = self.precisions[precisions]
+
     def scan(self):
         replant = [True] * len(self.positions)
         screenshot = self.screenshot_thread.croppedcoordinates(352, 320, 448, 352)
@@ -64,31 +72,12 @@ class CropMonitor(PublisherThread, PausableThread):
             cropped = screenshot.crop((x1, 0, x2, y2))
 
             for template in templates:
-                pos = imagesearch_fromscreenshot_withtemplate(template["image"], cropped, precision=self.precisions[position])
+                pos = imagesearch_fromscreenshot_withtemplate(template["image"], cropped, precision=self.current_precisions[position])
                 if pos[0] != -1:
                     replant[i] = False
                     break
 
         return replant
-
-    def scansingle(self, index):
-        position = self.positions[index]
-        precision = self.scansingle_precisions[position]
-        # always use mid templates
-        templates = self.templates["mid"]
-
-        x1 = 352 + index * self.box_size[0]
-        y1 = 320
-        x2 = self.box_size[0]
-        y2 = self.box_size[1]
-
-        screenshot = self.screenshot_thread.croppedsize(x1, y1, x2, y2)
-        for template in templates:
-            pos = imagesearch_fromscreenshot_withtemplate(template["image"], screenshot, precision=precision)
-            if pos[0] != -1:
-                return True
-
-        return False
 
     def run(self):
         self.logger.debug("started")

@@ -261,6 +261,7 @@ class FarmThread(object):
 
     def __cropcallback(self, payload, args):
         if self.__pause("cropmonitor"):
+            self.crop_monitor.useprecisions("normal")
             self.logger.debug("crop callback")
             for i in range(2):
                 current = self.location_monitor.getcoordinates()
@@ -308,6 +309,7 @@ class FarmThread(object):
 
             self.crop_monitor.unsubscribe(self.__cropcallback)
             self.crop_monitor.subscribe(self.__harvestallcallback)
+            self.crop_monitor.useprecisions("harvestall")
             self.crop_monitor.resume(0.25)
             self.harvester.startharvest()
 
@@ -327,6 +329,7 @@ class FarmThread(object):
 
             self.crop_monitor.unsubscribe(self.__cropcallback)
             self.crop_monitor.subscribe(self.__harvestallcallback, {"intermediate": True})
+            self.crop_monitor.useprecisions("harvestall")
             self.crop_monitor.resume(0.25)
             self.harvester.startharvest()       
 

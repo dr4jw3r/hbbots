@@ -9,6 +9,9 @@ from lib.imagesearch import *
 from lib.pickup_gold import checkforgold
 from lib.pickup_drops import checkfordrops
 from lib.inputcontrol import *
+from lib.utils.CancellationToken import CancellationToken
+from lib.utils.ScreenshotThread import ScreenshotThread
+from lib.ocr import OCR
 
 import pyautogui
 
@@ -18,6 +21,9 @@ class OrcThread(object):
         self.idx = 1
         self.keeprunning = True
         self.killaroundthread = None
+
+        self.cancellation_token = CancellationToken()
+        self.ocr = OCR(ScreenshotThread(self.cancellation_token))
         thread = Thread(target=self.run, args=())
         thread.daemon = True
         thread.start()
@@ -36,7 +42,7 @@ class OrcThread(object):
         return pos[0] != -1
 
     def checkaround(self):
-        self.killaroundthread = KillAroundThread(singlescan=True)
+        self.killaroundthread = KillAroundThread(self.ocr, singlescan=True)
         self.killaroundthread = None
 
     def findorc(self):
