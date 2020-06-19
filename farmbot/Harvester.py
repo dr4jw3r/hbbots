@@ -16,9 +16,12 @@ class Harvester(object):
         self.ocr = ocr
         self.state = state
 
-    def startharvest(self):        
+    def startharvest(self, move=True):        
         self.logger.debug("start harvest")
-        self.__movetoplantingposition("center")
+        
+        if move:
+            self.__movetoplantingposition("center")
+        
         sleep(0.1)
         rightdown()
         sleep(0.05)

@@ -284,6 +284,7 @@ class FarmThread(object):
         for o in order:
             if needs_harvest[o]:
                 self.harvester.moveto(o)
+                self.harvester.startharvest(move=False)
                 break
 
         if not any(needs_harvest):
