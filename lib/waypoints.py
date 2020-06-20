@@ -4,6 +4,12 @@ planting_x = int(readconfig()["FARMBOT"]["PlantingLocationX"])
 planting_y = int(readconfig()["FARMBOT"]["PlantingLocationY"])
 
 WAYPOINTS = {
+    "snake_pit": [
+        [(91, 85), 5],
+        [(160, 85), 5],
+        [(211, 64), 2],
+        [(215, 59), 2],
+    ],
     "blacksmith": [
         [(58, 101), 5],
         [(63, 96), 2],

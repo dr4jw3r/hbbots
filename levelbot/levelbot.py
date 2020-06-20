@@ -8,6 +8,12 @@ from levelbot.levelbot_common import *
 from lib.common import *
 #
 from lib.equipment import equipstaff
+from lib.spells import recall
+from lib.Movement import Movement
+from lib.monitor.LocationMonitor import LocationMonitor
+from lib.utils.ScreenshotThread import ScreenshotThread
+from lib.ocr import OCR
+from lib.waypoints import WAYPOINTS
 
 class LevellingBotThread(object):
     def __init__(self, start_at_pit, meat_type):
@@ -17,6 +23,11 @@ class LevellingBotThread(object):
 
         self.direction = [1, 1]
         self.kill_time = 60
+
+        sc_thread = ScreenshotThread(self.cancellation_token)
+        loc_monitor = LocationMonitor(sc_thread, self.cancellation_token)
+        self.movement = Movement(loc_monitor, self.cancellation_token)
+        self.ocr = OCR(sc_thread)
 
         thread = Thread(target=self.run, args=())
         thread.daemon = True
@@ -29,6 +40,7 @@ class LevellingBotThread(object):
             if not self.start_at_pit:
                 print("Equip staff")
                 equipstaff()
+                sleep(0.5)
 
                 if self.cancellation_token.is_cancelled:
                     break
@@ -70,7 +82,8 @@ class LevellingBotThread(object):
                     break
 
                 print("Going to blacksmith")
-                gotoblacksmith_fromrecall(self.cancellation_token)
+                self.movement.followwaypoints(WAYPOINTS["blacksmith"], "blacksmith")
+
 
                 if self.cancellation_token.is_cancelled:
                     break
@@ -95,25 +108,20 @@ class LevellingBotThread(object):
 
                 if not has_eaten_meat:
                     print("Eating")
-                    eat(self.cancellation_token, 3)
+                    eat(self.cancellation_token, 3)                                   
+
+                if self.cancellation_token.is_cancelled:
+                    break
+
+                print("Going to pit")
+                self.movement.followwaypoints(WAYPOINTS["snake_pit"])
 
                 if self.cancellation_token.is_cancelled:
                     break
 
                 print("Equipping weapon")
                 sleep(0.5)
-                equipweapon()                        
-
-                if self.cancellation_token.is_cancelled:
-                    break
-
-                print("Going to pit")
-                PIT_WPTS = [
-                    [160, 85],
-                    [211, 64],
-                    [215, 59]
-                ]
-                followwpts(self.cancellation_token, PIT_WPTS)
+                equipweapon()    
 
                 if self.cancellation_token.is_cancelled:
                     break
@@ -122,7 +130,7 @@ class LevellingBotThread(object):
 
             self.start_at_pit = False
             print("Killing")
-            kill(self.cancellation_token, self.kill_time)
+            kill(self.ocr, self.cancellation_token, self.kill_time)
             
             if checkifdead():
                 restart()
@@ -133,9 +141,9 @@ class LevellingBotThread(object):
 
             print("Running away")
             RUNAWAY_WPTS = [
-                [206, 78]
+                [(206, 78), 2]
             ]
-            followwpts(self.cancellation_token, RUNAWAY_WPTS)
+            self.movement.followwaypoints(RUNAWAY_WPTS)
 
     def stop(self):
         self.cancellation_token.cancel()    

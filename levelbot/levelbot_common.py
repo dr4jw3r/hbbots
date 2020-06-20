@@ -18,9 +18,9 @@ DISENCHANT_TIME = 5
 
 ### ACTIONS ###
 
-def kill(cancellation_token, time):
+def kill(ocr, cancellation_token, time):
     start = currentmillis()
-    killthread = KillAroundThread()
+    killthread = KillAroundThread(ocr)
             
     current_time = 0
     
