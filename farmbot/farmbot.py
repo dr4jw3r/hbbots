@@ -48,6 +48,7 @@ class FarmThread(object):
 
         self.num_hoes = 4
         self.pausing_authority = None
+        self.waypoints = None
 
         self.cancellation_token = CancellationToken()
         self.logger = logging.getLogger("hbbot.farmbot.main")        
@@ -146,6 +147,16 @@ class FarmThread(object):
         self.crop_monitor.unsubscribe(self.__harvestallcallback)
         self.crop_monitor.subscribe(self.__cropcallback)
 
+    def __getlocation(self):
+        if self.waypoints is None:
+            coordinates = None
+        
+            while coordinates is None:
+                coordinates = self.location_monitor.getcoordinates()
+            
+            self.waypoints = WAYPOINTS["planting_spot"]
+            self.waypoints.append([coordinates, 0])
+
     # Action functions
 
     def __blacksmith(self):
@@ -222,14 +233,18 @@ class FarmThread(object):
             eat(1, self.cancellation_token)
             
             self.logger.debug("going to planting spot")
-            self.movement.followwaypoints(WAYPOINTS["planting_spot"])
+            self.movement.followwaypoints(self.waypoints)
         
             if self.cancellation_token.is_cancelled:
                 return
 
         self.start_at_farm = False
+
+        self.logger.debug("getting location")
+        self.__getlocation()        
+
         self.logger.debug("going to planting spot 2")
-        self.movement.gotolastwaypoint(WAYPOINTS["planting_spot"])
+        self.movement.gotolastwaypoint(self.waypoints)
         self.drop_handler.pickup(self.cancellation_token)
 
         self.__reset()
@@ -266,9 +281,9 @@ class FarmThread(object):
             for i in range(2):
                 current = self.location_monitor.getcoordinates()
                 if current is not None:
-                    last_wpt = WAYPOINTS["planting_spot"][-1][0]
+                    last_wpt = self.waypoints[-1][0]
                     if current[0] != last_wpt[0] or current[1] != last_wpt[1]:
-                        self.movement.gotolastwaypoint(WAYPOINTS["planting_spot"])
+                        self.movement.gotolastwaypoint(self.waypoints)
                         sleep(0.2)
 
             self.planter.replant(payload["replant"])
@@ -349,7 +364,7 @@ class FarmThread(object):
     def __timeoutcallback(self):
         if self.__pause("timeoutcallback", True):
             self.logger.debug("timeout callback")
-            self.movement.stopmoving()
+            sleep(5)
             self.__farm()
 
     # Main functions

@@ -41,7 +41,7 @@ class Movement(object):
         return (direction_x, direction_y, distance_x, distance_y)
 
     def __gotopoint(self, point, tolerance, locationstop):
-        timeout_time = 35
+        timeout_time = 60
         timeout_timer = time()
 
         while True:
@@ -130,10 +130,3 @@ class Movement(object):
         point = waypoint[0]
         tolerance = waypoint[1]
         self.__gotopoint(point, tolerance, locationstop)
-    
-    def stopmoving(self):
-        sleep(0.1)
-        moveto((400, 600))
-        sleep(0.1)
-        clickright()
-        sleep(0.1)

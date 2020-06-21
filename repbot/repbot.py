@@ -7,11 +7,13 @@ from threading import Thread
 from lib.utils.CancellationToken import CancellationToken
 from lib.ocr import OCR
 from lib.inputcontrol import keypress, keyup
+from lib.utils.ScreenshotThread import ScreenshotThread
 
 class RepBotThread(object):
     def __init__(self):
-        self.cancellation_token = CancellationToken()        
-        self.OCR = OCR()
+        self.cancellation_token = CancellationToken()
+        sc_thread = ScreenshotThread(self.cancellation_token)   
+        self.OCR = OCR(sc_thread)
         self.reptime = -1        
 
         thread = Thread(target=self.run, args=())

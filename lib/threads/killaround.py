@@ -2,6 +2,8 @@ import random
 #====
 from threading import Thread
 from time import sleep, time
+from PIL import ImageGrab
+from cv2 import imread
 #====
 from lib.imagesearch import *
 from lib.inputcontrol import *
@@ -18,6 +20,10 @@ class KillAroundThread(object):
         self.singlescan = singlescan
         self.ocr = ocr
         self.cancellation_token = CancellationToken()
+
+        self.cursor_template = imread("./common/samples/misc/cursor.png", 0)
+        self.elite_template = imread("./common/samples/misc/elite.png", 0)
+
         self.POSITIONS = [
             ( 367, 260 ),
             ( 397, 260 ),
@@ -86,27 +92,29 @@ class KillAroundThread(object):
         critcounter = 0
         scancount = 0
         clickleftcount = 0
-        indexes = random.sample(range(0, 8), 8)
+        indexes = [x for x in range(len(self.POSITIONS))]
 
         while self.keeprunning:                           
             if scancount >= 3:
                 scanouter = True
 
             if not scanouter:
-                moveto(self.POSITIONS[indexes[index]])
+                cur_pos = self.POSITIONS[indexes[index]]
             else:
-                moveto(self.OUTER[index])
+                cur_pos = self.OUTER[index]
                 
-            sleep(0.08)
+            moveto(cur_pos)
+            sleep(0.03)
 
-            if not scanouter and indexes[index] >= 0 and indexes[index] <= 2:
-                # precision = 0.45
-                precision = 0.4427884615384618
-            else:
-                # precision = 0.45
-                precision = 0.4427884615384618
+            precision = 0.4
             
-            pos = imagesearch("./common/samples/misc/cursor.png", precision)
+            x1 = cur_pos[0] - 5
+            y1 = cur_pos[1] - 5
+            x2 = cur_pos[0] + 40
+            y2 = cur_pos[1] + 40
+
+            scr = ImageGrab.grab(bbox=(x1, y1, x2, y2))
+            pos = imagesearch_fromscreenshot_withtemplate(self.cursor_template, scr, precision=precision)
 
             # If sword cursor has NOT been found
             if pos[0] == -1:
@@ -131,7 +139,6 @@ class KillAroundThread(object):
                             self.stop()
 
                         index = 0
-                        indexes = random.sample(range(0, 8), 8)
                         scancount += 1
                 # Scan outer circle
                 else:
@@ -142,8 +149,16 @@ class KillAroundThread(object):
             
             # If sword cursor has been found
             else:
-                elitepos = imagesearch("./common/samples/misc/elite.png", 0.8)
+                x1 = cur_pos[0] - 50
+                y1 = cur_pos[1] + 10
+                x2 = cur_pos[0] + 50
+                y2 = cur_pos[1] + 50
+                scr = ImageGrab.grab(bbox=(x1, y1, x2, y2))
+                elitepos = imagesearch_fromscreenshot_withtemplate(self.elite_template, scr, precision=0.6)
                 iselite = elitepos[0] != -1
+
+                if iselite:
+                    scr.save("elite.png")
 
                 if scanouter:
                     keydown("ctrlleft")

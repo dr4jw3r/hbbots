@@ -14,7 +14,7 @@ class GUI(object):
             ("CTRL + ALT + SHIFT + Y", "Advert Bot"),
             ("CTRL + ALT + SHIFT + T", "Fake AMP Bot"),
             ("CTRL + ALT + SHIFT + R", "Rep Bot"),
-            ("CTRL + ALT + SHIFT + X", "Farm Bot"),
+            # ("CTRL + ALT + SHIFT + X", "Farm Bot"),
             ("CTRL + ALT + SHIFT + C", "Farm Bot - Start at farm"),
         ]
 

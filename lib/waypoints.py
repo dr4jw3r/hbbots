@@ -27,7 +27,7 @@ WAYPOINTS = {
     "planting_spot": [
         [(59, 100), 5],
         [(70, 103), 5],
-        [(planting_x, planting_y), 0],
+        # [(planting_x, planting_y), 0],
     ]
     
 }

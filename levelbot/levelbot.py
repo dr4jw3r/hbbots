@@ -22,7 +22,7 @@ class LevellingBotThread(object):
         self.cancellation_token = CancellationToken()
 
         self.direction = [1, 1]
-        self.kill_time = 60
+        self.kill_time = 30
 
         sc_thread = ScreenshotThread(self.cancellation_token)
         loc_monitor = LocationMonitor(sc_thread, self.cancellation_token)
