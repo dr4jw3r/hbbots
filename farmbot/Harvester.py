@@ -1,4 +1,5 @@
 import logging
+import inspect
 #
 from time import sleep
 # 
@@ -17,7 +18,9 @@ class Harvester(object):
         self.state = state
 
     def startharvest(self, move=True):        
-        self.logger.debug("start harvest")
+        curframe = inspect.currentframe()
+        calframe = inspect.getouterframes(curframe, 2)
+        self.logger.debug("start harvest" + calframe[1][3])
         
         if move:
             self.__movetoplantingposition("center")
@@ -27,7 +30,9 @@ class Harvester(object):
         sleep(0.05)
  
     def stopharvest(self):        
-        self.logger.debug("stop harvest")
+        curframe = inspect.currentframe()
+        calframe = inspect.getouterframes(curframe, 2)
+        self.logger.debug("stop harvest" + calframe[1][3])
         rightup()
         sleep(0.1)
 

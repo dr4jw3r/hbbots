@@ -105,9 +105,9 @@ class Movement(object):
             click()
 
             if self.distance_x > 5 or self.distance_y > 5:
-                sleep(1.5)
-            else:
                 sleep(1)
+            else:
+                sleep(1.5)
 
     def followwaypoints(self, waypoints, locationstop=None):
         closeinventory()

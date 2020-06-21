@@ -284,7 +284,7 @@ class FarmThread(object):
                     last_wpt = self.waypoints[-1][0]
                     if current[0] != last_wpt[0] or current[1] != last_wpt[1]:
                         self.movement.gotolastwaypoint(self.waypoints)
-                        sleep(0.2)
+                        sleep(1)
 
             self.planter.replant(payload["replant"])
             self.__resume("cropmonitor")
