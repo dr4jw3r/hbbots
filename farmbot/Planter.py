@@ -8,19 +8,20 @@ from lib.imagesearch import imagesearch_fromscreenshot_withtemplate
 from farmbot.positions import Position, PLANTING_POSITIONS
 
 class Planter(object):
-    def __init__(self, screenshot_thread):
+    def __init__(self, screenshot_thread, cancellation_token):
         self.screenshot_thread = screenshot_thread
+        self.cancellation_token = cancellation_token
 
         self.SEED_BAG_IMAGE = imread("./common/samples/inventory/seed_bag.png", 0)
         self.SEED_BAG_PRECISION = 0.7
 
-    def plantsingle(self, position, cancellation_token):
-        has_bag = self._clickbag(cancellation_token)
+    def plantsingle(self, position):
+        has_bag = self._clickbag()
         if has_bag:
             moveto((position.x, position.y))
             sleep(0.3)
 
-            if cancellation_token.is_cancelled:
+            if self.cancellation_token.is_cancelled:
                 return False
 
             click()
@@ -28,24 +29,24 @@ class Planter(object):
 
         return has_bag
 
-    def replant(self, values, cancellation_token):
+    def replant(self, values):
         for i in range(len(values)):
-            if cancellation_token.is_cancelled:
+            if self.cancellation_token.is_cancelled:
                 break
 
             if values[i]:
-                self.plantsingle(PLANTING_POSITIONS[i], cancellation_token)
+                self.plantsingle(PLANTING_POSITIONS[i])
     
-    def findseedbag(self, cancellation_token):
+    def findseedbag(self):
         openinventory()
         RETRY_COUNT = 5
         BAG_OFFSET = 10
-        bounds = getbounds()
+        bounds = getbounds(self.cancellation_token)
 
         screenshot = self.screenshot_thread.croppedcoordinates(bounds[0][0], bounds[0][1], bounds[1][0], bounds[1][1])
 
         for i in range(RETRY_COUNT):
-            if cancellation_token.is_cancelled:
+            if self.cancellation_token.is_cancelled:
                 return (-1, -1)
 
             seed_bag_pos = imagesearch_fromscreenshot_withtemplate(self.SEED_BAG_IMAGE, screenshot, self.SEED_BAG_PRECISION)
@@ -57,8 +58,8 @@ class Planter(object):
 
         return (-1, -1)
 
-    def _clickbag(self, cancellation_token):
-        bag_pos = self.findseedbag(cancellation_token)
+    def _clickbag(self):
+        bag_pos = self.findseedbag()
 
         if bag_pos[0] == -1:
             return False
@@ -66,7 +67,7 @@ class Planter(object):
         moveto(bag_pos)
         sleep(0.05)
 
-        if cancellation_token.is_cancelled:
+        if self.cancellation_token.is_cancelled:
             return False
 
         click(2)

@@ -41,7 +41,7 @@ class HoeMonitor(PublisherThread, PausableThread):
                 sleep(0.2)
                 continue
 
-            b = getbounds()
+            b = getbounds(self.cancellation_token)
             a = self.areas[self.state.gethoeindex()]
             
             x1 = b[0][0] + a[0]

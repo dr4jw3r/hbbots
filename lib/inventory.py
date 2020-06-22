@@ -32,11 +32,20 @@ def _findcorner():
     
         if text_pos[0] is not -1:
             return _addoffset(text_pos, CORNER_OFFSET)
+        else:
+            return (-1, -1)
 
-def getbounds():
+def getbounds(cancellation_token):
     openinventory()
     sleep(0.1)
-    corner = _findcorner()
+
+    corner = (-1, -1)
+    while corner[0] == -1:
+        if cancellation_token.is_cancelled:
+            return (-1, -1)
+            
+        corner = _findcorner()
+
     corner2 = (corner[0] + INVENTORY_WINDOW_SIZE[0], corner[1] + INVENTORY_WINDOW_SIZE[1])
     return (corner, corner2)
 

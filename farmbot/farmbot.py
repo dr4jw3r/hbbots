@@ -60,11 +60,11 @@ class FarmThread(object):
         # utils
         self.state = BotState()
         self.ocr = OCR(self.screenshot_thread)
-        self.scanner = Scanner(self.screenshot_thread)
+        self.scanner = Scanner(self.screenshot_thread, self.cancellation_token)
         self.movement = Movement(self.location_monitor, self.cancellation_token)
-        self.planter = Planter(self.screenshot_thread)
+        self.planter = Planter(self.screenshot_thread, self.cancellation_token)
         self.drop_handler = DropHandler(self.crop, self.screenshot_thread)
-        self.inventory_manager = InventoryManager(self.scanner, self.crop)
+        self.inventory_manager = InventoryManager(self.scanner, self.crop, self.cancellation_token)
 
         self.timekeeper = TimekeeperThread(self.cancellation_token)
         harvest_time_timeout = int(configurationparser.readconfig()["FARMBOT"]["HarvestTimeout"])
@@ -300,7 +300,7 @@ class FarmThread(object):
                         self.movement.gotolastwaypoint(self.waypoints)
                         sleep(1)
 
-            self.planter.replant(payload["replant"], self.cancellation_token)
+            self.planter.replant(payload["replant"])
             self.__resume("cropmonitor")
 
     def __harvestallcallback(self, payload, args):

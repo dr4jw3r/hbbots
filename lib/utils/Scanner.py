@@ -4,8 +4,9 @@ from lib.imagesearch import imagesearch_fromscreenshot
 from lib.inventory import getbounds
 
 class Scanner(object):
-    def __init__(self, screenshot_thread):
+    def __init__(self, screenshot_thread, cancellation_token):
         self.screenshot_thread = screenshot_thread
+        self.cancellation_token = cancellation_token
 
     def findnpc(self, npc, precision=0.8):
         scr = self.screenshot_thread.screenshot
@@ -13,7 +14,7 @@ class Scanner(object):
         return (pos, pos[0] != -1)
 
     def findininventory(self, item, precision=0.8):
-        b = getbounds()
+        b = getbounds(self.cancellation_token)
         sleep(0.25)
         scr = self.screenshot_thread.croppedcoordinates(b[0][0], b[0][1], b[1][0], b[1][1])
         pos = imagesearch_fromscreenshot("./common/samples/inventory/{0}.png".format(item), scr, precision)

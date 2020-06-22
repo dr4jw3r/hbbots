@@ -31,7 +31,7 @@ class BagMonitor(PublisherThread, PausableThread):
                 sleep(0.2)
                 continue
 
-            pos = self.scanner.findininventory("seed_bag", precision=0.65)
+            pos = self.scanner.findininventory("seed_bag", self.cancellation_token, precision=0.65)
             if pos[0] == -1:
                 self.notify({ "has_bag": False })
             sleep(0.2)
