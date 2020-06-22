@@ -63,7 +63,6 @@ class HotkeyHandler():
         elif action == "killaround":
             self.st = ScreenshotThread(CancellationToken())
             self.ocr_temp = OCR(self.st)
-
             self.currentthread = KillAroundThread(self.ocr_temp, meat_type="scorpionmeat")
         elif action == "orcbot":
             self.currentthread = OrcThread()

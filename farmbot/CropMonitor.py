@@ -12,9 +12,9 @@ from lib.utils.PublisherThread import PublisherThread
 from lib.utils.PausableThread import PausableThread
 
 class CropMonitor(PublisherThread, PausableThread):
-    def __init__(self, screenshot_thread):
+    def __init__(self, screenshot_thread, cancellation_token):
         PublisherThread.__init__(self)
-        PausableThread.__init__(self)
+        PausableThread.__init__(self, cancellation_token)
         self.thread.name == __class__.__name__
 
         self.OCR = OCR(screenshot_thread)
@@ -25,7 +25,7 @@ class CropMonitor(PublisherThread, PausableThread):
         self.box_size = (32, 32)
         self.positions = ["left", "mid", "right"]
         self.precisions = {
-            "normal": { "left": 0.5, "mid": 0.5, "right": 0.55 },
+            "normal": { "left": 0.5, "mid": 0.5, "right": 0.65 },
             "harvestall": { "left": 0.5, "mid": 0.5, "right": 0.5 }
         }
 

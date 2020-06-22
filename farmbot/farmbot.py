@@ -66,23 +66,23 @@ class FarmThread(object):
         self.drop_handler = DropHandler(self.crop, self.screenshot_thread)
         self.inventory_manager = InventoryManager(self.scanner, self.crop)
 
-        self.timekeeper = TimekeeperThread()
+        self.timekeeper = TimekeeperThread(self.cancellation_token)
         harvest_time_timeout = int(configurationparser.readconfig()["FARMBOT"]["HarvestTimeout"])
         self.timekeeper.register(self.__harvesttimecallback, harvest_time_timeout)
         self.timekeeper.register(self.__timeoutcallback, 1000)
 
-        self.hoe_monitor = HoeMonitor(self.screenshot_thread, self.state)
+        self.hoe_monitor = HoeMonitor(self.screenshot_thread, self.state, self.cancellation_token)
         self.hoe_monitor.subscribe(self.__hoecallback)
         
-        self.bag_monitor = BagMonitor(self.ocr, self.scanner)
+        self.bag_monitor = BagMonitor(self.ocr, self.scanner, self.cancellation_token)
         self.bag_monitor.subscribe(self.__bagcallback)
 
-        self.crop_monitor = CropMonitor(self.screenshot_thread)
+        self.crop_monitor = CropMonitor(self.screenshot_thread, self.cancellation_token)
 
-        self.health_monitor = HealthMonitor(self.ocr)
+        self.health_monitor = HealthMonitor(self.ocr, self.cancellation_token)
         self.health_monitor.subscribe(self.__healthcallback)
 
-        self.cursor_monitor = CursorMonitor(self.screenshot_thread)
+        self.cursor_monitor = CursorMonitor(self.screenshot_thread, self.cancellation_token)
 
         self.harvester = Harvester(self.crop_monitor, self.ocr, self.state)
 
@@ -152,6 +152,9 @@ class FarmThread(object):
             coordinates = None
         
             while coordinates is None:
+                if self.cancellation_token.is_cancelled:
+                    return
+
                 coordinates = self.location_monitor.getcoordinates()
             
             self.waypoints = WAYPOINTS["planting_spot"]
@@ -243,9 +246,20 @@ class FarmThread(object):
         self.logger.debug("getting location")
         self.__getlocation()        
 
+        if self.cancellation_token.is_cancelled:
+            return
+
         self.logger.debug("going to planting spot 2")
         self.movement.gotolastwaypoint(self.waypoints)
+
+        if self.cancellation_token.is_cancelled:
+            return
+
+        self.logger.debug("picking up drops")
         self.drop_handler.pickup(self.cancellation_token)
+
+        if self.cancellation_token.is_cancelled:
+            return
 
         self.__reset()
         hoe_equipped = False
@@ -286,7 +300,7 @@ class FarmThread(object):
                         self.movement.gotolastwaypoint(self.waypoints)
                         sleep(1)
 
-            self.planter.replant(payload["replant"])
+            self.planter.replant(payload["replant"], self.cancellation_token)
             self.__resume("cropmonitor")
 
     def __harvestallcallback(self, payload, args):

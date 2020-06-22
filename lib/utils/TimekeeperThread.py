@@ -3,13 +3,10 @@ import logging
 from threading import Thread
 from time import sleep, time
 # 
-from lib.utils.CancellationToken import CancellationToken
-# from lib.utils.PublisherThread import PublisherThread
 
 class TimekeeperThread(object):
-    def __init__(self):
-        # PublisherThread.__init__(self)
-        self.cancellation_token = CancellationToken()
+    def __init__(self, cancellation_token):
+        self.cancellation_token = cancellation_token
 
         self.logger = logging.getLogger("hbbot.timekeeper")
 

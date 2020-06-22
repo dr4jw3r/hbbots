@@ -10,9 +10,9 @@ from lib.utils.PublisherThread import PublisherThread
 from lib.utils.PausableThread import PausableThread
 
 class CursorMonitor(PublisherThread, PausableThread):
-    def __init__(self, screenshot_thread):
+    def __init__(self, screenshot_thread, cancellation_token):
         PublisherThread.__init__(self)
-        PausableThread.__init__(self)
+        PausableThread.__init__(self, cancellation_token)
 
         self.screenshot_thread = screenshot_thread
         self.logger = logging.getLogger("hbbot.cursormonitor")

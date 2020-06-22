@@ -4,15 +4,13 @@ from threading import Thread
 from time import sleep, time
 # 
 from lib.ocr import OCR
-from lib.utils.CancellationToken import CancellationToken
 from lib.utils.PublisherThread import PublisherThread
 from lib.utils.PausableThread import PausableThread
 
 class HealthMonitor(PublisherThread, PausableThread):
-    def __init__(self, ocr):
+    def __init__(self, ocr, cancellation_token):
         PublisherThread.__init__(self)
-        PausableThread.__init__(self)
-        self.cancellation_token = CancellationToken()
+        PausableThread.__init__(self, cancellation_token)
         self.is_paused = False
         self.is_started = False
         self.ocr = ocr

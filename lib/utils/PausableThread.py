@@ -1,11 +1,11 @@
+#
 from time import sleep
 from threading import Thread
 # 
-from lib.utils.CancellationToken import CancellationToken
 
 class PausableThread(object):
-    def __init__(self):
-        self.cancellation_token = CancellationToken()
+    def __init__(self, cancellation_token):
+        self.cancellation_token = cancellation_token
         self.is_started = False
         self.is_paused = False
         self.delay = 0

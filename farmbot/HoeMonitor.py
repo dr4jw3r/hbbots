@@ -6,14 +6,13 @@ from cv2 import imread
 # 
 from lib.inventory import getbounds
 from lib.imagesearch import imagesearch_fromscreenshot_withtemplate
-from lib.utils.CancellationToken import CancellationToken
 from lib.utils.PublisherThread import PublisherThread
 from lib.utils.PausableThread import PausableThread
 
 class HoeMonitor(PublisherThread, PausableThread):
-    def __init__(self, screenshot_thread, state):
+    def __init__(self, screenshot_thread, state, cancellation_token):
         PublisherThread.__init__(self)
-        PausableThread.__init__(self)
+        PausableThread.__init__(self, cancellation_token)
 
         self.screenshot_thread = screenshot_thread
         self.state = state

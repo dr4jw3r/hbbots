@@ -75,6 +75,7 @@ class Harvester(object):
         for pos in PLANTING_POSITIONS:
             if pos.description == position:
                 moveto((pos.x, pos.y))
+                sleep(0.1)
                 return
 
         
