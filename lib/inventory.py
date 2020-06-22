@@ -42,8 +42,8 @@ def getbounds(cancellation_token):
     corner = (-1, -1)
     while corner[0] == -1:
         if cancellation_token.is_cancelled:
-            return (-1, -1)
-            
+            return None
+
         corner = _findcorner()
 
     corner2 = (corner[0] + INVENTORY_WINDOW_SIZE[0], corner[1] + INVENTORY_WINDOW_SIZE[1])

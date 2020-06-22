@@ -11,7 +11,7 @@ class InventoryManager(object):
         self.cancellation_token = cancellation_token
     
     def moveproduce(self):
-        pos = self.scanner.findininventory(self.crop.name, self.cancellation_token, 0.7)
+        pos = self.scanner.findininventory(self.crop.name, 0.7)
         if pos[0] != -1:
             moveto(pos, self.crop.offset[0], self.crop.offset[1])
             sleep(0.2)
