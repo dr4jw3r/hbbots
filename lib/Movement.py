@@ -105,7 +105,7 @@ class Movement(object):
             click()
 
             if self.distance_x > 5 or self.distance_y > 5:
-                sleep(1)
+                sleep(0.5)
             else:
                 sleep(2)
 

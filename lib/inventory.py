@@ -37,7 +37,7 @@ def _findcorner():
 
 def getbounds(cancellation_token):
     openinventory()
-    sleep(0.1)
+    sleep(0.21)
 
     corner = (-1, -1)
     while corner[0] == -1:

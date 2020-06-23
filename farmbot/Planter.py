@@ -43,6 +43,9 @@ class Planter(object):
         BAG_OFFSET = 10
         bounds = getbounds(self.cancellation_token)
 
+        if bounds is None:
+            return (-1, -1)
+
         screenshot = self.screenshot_thread.croppedcoordinates(bounds[0][0], bounds[0][1], bounds[1][0], bounds[1][1])
 
         for i in range(RETRY_COUNT):

@@ -15,6 +15,10 @@ class Scanner(object):
 
     def findininventory(self, item, precision=0.8):
         b = getbounds(self.cancellation_token)
+
+        if b is None:
+            return (-1, -1)
+
         sleep(0.25)
         scr = self.screenshot_thread.croppedcoordinates(b[0][0], b[0][1], b[1][0], b[1][1])
         pos = imagesearch_fromscreenshot("./common/samples/inventory/{0}.png".format(item), scr, precision)

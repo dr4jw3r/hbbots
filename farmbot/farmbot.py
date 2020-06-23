@@ -341,6 +341,7 @@ class FarmThread(object):
             self.crop_monitor.subscribe(self.__harvestallcallback)
             self.crop_monitor.useprecisions("harvestall")
             self.crop_monitor.resume(0.25)
+            self.health_monitor.resume()
             self.harvester.startharvest()
 
     def __healthcallback(self, payload, args):
