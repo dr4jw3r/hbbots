@@ -25,11 +25,15 @@ class CropMonitor(PublisherThread, PausableThread):
         self.box_size = (32, 32)
         self.positions = ["left", "mid", "right"]
         self.precisions = {
-            "normal": { "left": 0.5, "mid": 0.5, "right": 0.68 },
+            "normal": { "left": 0.5, "mid": 0.5, "right": 0.5 },
             "harvestall": { "left": 0.5, "mid": 0.5, "right": 0.5 }
         }
 
         self.current_precisions = self.precisions["normal"]
+
+        self.plant_time = 10
+        curtime = time() - self.plant_time
+        self.plant_times = { "left": curtime, "mid": curtime, "right": curtime }
 
         IMAGES_DIR = "./common/samples/produce/crops/"
         self.templates = self.__readimages(IMAGES_DIR)
@@ -63,19 +67,26 @@ class CropMonitor(PublisherThread, PausableThread):
 
         for i in range(len(self.positions)):
             position = self.positions[i]
-            templates = self.templates[position]
 
-            x1 = self.box_size[0] * i
-            x2 = (self.box_size[0] * i) + self.box_size[0]
-            y2 = self.box_size[1]
+            if time() - self.plant_times[position] < self.plant_time:
+                replant[i] = False
+                continue
+            else:
+                templates = self.templates[position]
 
-            cropped = screenshot.crop((x1, 0, x2, y2))
+                x1 = self.box_size[0] * i
+                x2 = (self.box_size[0] * i) + self.box_size[0]
+                y2 = self.box_size[1]
 
-            for template in templates:
-                pos = imagesearch_fromscreenshot_withtemplate(template["image"], cropped, precision=self.current_precisions[position])
-                if pos[0] != -1:
-                    replant[i] = False
-                    break
+                cropped = screenshot.crop((x1, 0, x2, y2))
+
+                for template in templates:
+                    pos = imagesearch_fromscreenshot_withtemplate(template["image"], cropped, precision=self.current_precisions[position])
+                    if pos[0] != -1:
+                        replant[i] = False
+                        break
+
+                self.plant_times[position] = time()
 
         return replant
 
